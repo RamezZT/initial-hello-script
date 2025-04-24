@@ -1,6 +1,8 @@
-
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Table,
   TableBody,
@@ -19,6 +21,8 @@ import { Edit, Trash2, Eye } from "lucide-react";
 export default function CharitiesList() {
   const [charities, setCharities] = useState<Charity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [noResults, setNoResults] = useState(false);
 
   useEffect(() => {
     fetchCharities();
@@ -63,11 +67,27 @@ export default function CharitiesList() {
     }
   };
 
+  const filteredCharities = charities.filter(charity =>
+    charity.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <DashboardLayout role="ADMIN">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Charities</h1>
+          <div className="w-[200px]">
+            <div className="relative">
+              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
+              <Input
+                type="text"
+                placeholder="Search charity"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-8"
+              />
+            </div>
+          </div>
         </div>
         
         <Card>
@@ -87,14 +107,14 @@ export default function CharitiesList() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {charities.length === 0 ? (
+                {filteredCharities.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center">
-                      No charities found
+                      {searchTerm ? "No charities found" : "No charities available"}
                     </TableCell>
                   </TableRow>
                 ) : (
-                  charities.map((charity) => (
+                  filteredCharities.map((charity) => (
                     <TableRow key={charity.id}>
                       <TableCell>{charity.id}</TableCell>
                       <TableCell className="font-medium">{charity.name}</TableCell>
