@@ -10,7 +10,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 import { 
   Dialog,
@@ -18,26 +17,49 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { getAllEvents, deleteEvent } from "@/lib/api";
-import { EventEntity } from "@/types";
-import { Edit, Trash2, Eye, Search } from "lucide-react";
+import { getAllEvents, deleteEvent, getAllCharities } from "@/lib/api";
+import { EventEntity, Charity } from "@/types";
+import { Edit, Trash2, Eye } from "lucide-react";
 import { EditEventForm } from "@/components/events/EditEventForm";
 
 export default function EventsList() {
   const [events, setEvents] = useState<EventEntity[]>([]);
+  const [charities, setCharities] = useState<Charity[]>([]);
   const [loading, setLoading] = useState(true);
-  const [charityFilter, setCharityFilter] = useState("");
+  const [selectedCharityId, setSelectedCharityId] = useState<string>("");
   const [selectedEvent, setSelectedEvent] = useState<EventEntity | null>(null);
 
   useEffect(() => {
+    fetchCharities();
     fetchEvents();
-  }, [charityFilter]);
+  }, [selectedCharityId]);
+
+  const fetchCharities = async () => {
+    try {
+      const data = await getAllCharities();
+      setCharities(data);
+    } catch (error) {
+      console.error("Error fetching charities:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load charities",
+        variant: "destructive",
+      });
+    }
+  };
 
   const fetchEvents = async () => {
     try {
       setLoading(true);
-      const data = await getAllEvents(charityFilter ? parseInt(charityFilter) : undefined);
+      const data = await getAllEvents(selectedCharityId ? parseInt(selectedCharityId) : undefined);
       setEvents(data);
     } catch (error) {
       console.error("Error fetching events:", error);
@@ -82,17 +104,23 @@ export default function EventsList() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Events</h1>
-          <div className="flex gap-2 items-center">
-            <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Filter by charity ID"
-                type="number"
-                className="pl-8"
-                value={charityFilter}
-                onChange={(e) => setCharityFilter(e.target.value)}
-              />
-            </div>
+          <div className="w-[200px]">
+            <Select
+              value={selectedCharityId}
+              onValueChange={setSelectedCharityId}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Filter by charity" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Charities</SelectItem>
+                {charities.map((charity) => (
+                  <SelectItem key={charity.id} value={charity.id.toString()}>
+                    {charity.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
         
