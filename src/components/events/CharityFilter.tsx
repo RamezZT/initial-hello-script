@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { getAllCharities } from "@/lib/api";
 import { Charity } from "@/types";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface CharityFilterProps {
   onFilterChange: (charityId: string) => void;
@@ -13,6 +14,7 @@ interface CharityFilterProps {
 export function CharityFilter({ onFilterChange }: CharityFilterProps) {
   const [charities, setCharities] = useState<Charity[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [noResults, setNoResults] = useState(false);
 
   useEffect(() => {
     fetchCharities();
@@ -37,11 +39,13 @@ export function CharityFilter({ onFilterChange }: CharityFilterProps) {
     const matchingCharity = charities.find(charity => 
       charity.name.toLowerCase().includes(value.toLowerCase())
     );
+    
+    setNoResults(value !== "" && !matchingCharity);
     onFilterChange(matchingCharity ? matchingCharity.id.toString() : "");
   };
 
   return (
-    <div className="w-[200px] relative">
+    <div className="w-[200px]">
       <div className="relative">
         <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
         <Input
@@ -52,6 +56,13 @@ export function CharityFilter({ onFilterChange }: CharityFilterProps) {
           className="pl-8"
         />
       </div>
+      {noResults && (
+        <Alert variant="destructive" className="mt-2">
+          <AlertDescription>
+            No charities found
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 }
