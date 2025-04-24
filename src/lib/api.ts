@@ -1,10 +1,10 @@
-
 import { fetchWithAuth } from "./auth";
-import { Category, Charity, Donation, EventEntity, Transaction } from "@/types";
+import { Category, Charity, CHARITY_STATUS, Donation, EventEntity, Transaction } from "@/types";
 
 // Charities API
-export async function getAllCharities(): Promise<Charity[]> {
-  return fetchWithAuth("/charity/all");
+export async function getAllCharities(status?: CHARITY_STATUS): Promise<Charity[]> {
+  const url = status ? `/charity/all?charityStatus=${status}` : "/charity/all";
+  return fetchWithAuth(url);
 }
 
 export async function getCharity(id: number): Promise<Charity> {
@@ -19,6 +19,13 @@ export async function updateCharity(charity: Partial<Charity> & { id: number }):
   return fetchWithAuth("/charity", {
     method: "PATCH",
     body: JSON.stringify(charity),
+  });
+}
+
+export async function updateCharityStatus(id: number, status: CHARITY_STATUS): Promise<Charity> {
+  return fetchWithAuth("/charity/admin-update", {
+    method: "PATCH",
+    body: JSON.stringify({ id, status }),
   });
 }
 
@@ -103,4 +110,3 @@ export async function getCharityTransactions(charityId: number): Promise<Transac
 // Payment Method Utilities
 export const PAYMENT_METHODS = ["VISA", "MASTERCARD"] as const;
 export type PaymentMethodType = "VISA" | "MASTERCARD";
-

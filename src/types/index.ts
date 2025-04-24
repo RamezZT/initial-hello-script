@@ -1,5 +1,10 @@
-
 export type Role = "DONOR" | "CHARITY" | "ADMIN";
+
+export enum CHARITY_STATUS {
+  ACCEPTED = 'accepted',
+  REJECTED = 'rejected',
+  PENDING = 'pending',
+}
 
 export type User = {
   id: number;
@@ -38,6 +43,7 @@ export type Charity = {
   events?: EventEntity[];
   transactions?: Transaction[];
   canReceiveFunds: boolean;
+  status?: CHARITY_STATUS;
 };
 
 export type EventEntity = {
