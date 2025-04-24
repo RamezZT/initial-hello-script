@@ -1,7 +1,7 @@
 
 import { useState, ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { User } from "@/types";
+import { User, Role } from "@/types";
 import { logout, getUser } from "@/lib/auth";
 import { 
   Sidebar,
@@ -15,11 +15,10 @@ import {
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarInset
+  SidebarMenuItem
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { Home, Users, Calendar, Folder, Settings, LogOut, BarChart2, MessageSquare } from "lucide-react";
+import { Home, Users, Calendar, Folder, Settings, LogOut, BarChart2 } from "lucide-react";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -42,18 +41,12 @@ export default function DashboardLayout({ children, role }: DashboardLayoutProps
       return [
         { title: "Dashboard", icon: Home, path: "/admin/dashboard" },
         { title: "Charities", icon: Users, path: "/admin/charities" },
-        { title: "Donations", icon: Folder, path: "/admin/donations" },
         { title: "Events", icon: Calendar, path: "/admin/events" },
-        { title: "Categories", icon: Folder, path: "/admin/categories" },
-        { title: "Transactions", icon: BarChart2, path: "/admin/transactions" },
-        { title: "Settings", icon: Settings, path: "/admin/settings" },
       ];
     } else {
       return [
         { title: "Dashboard", icon: Home, path: "/charity/dashboard" },
         { title: "Your Events", icon: Calendar, path: "/charity/events" },
-        { title: "Your Donations", icon: Folder, path: "/charity/donations" },
-        { title: "Settings", icon: Settings, path: "/charity/settings" },
       ];
     }
   };
@@ -109,23 +102,21 @@ export default function DashboardLayout({ children, role }: DashboardLayoutProps
           </SidebarFooter>
         </Sidebar>
 
-        <SidebarInset>
-          <div className="flex h-screen flex-col">
-            <header className="border-b border-border p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <SidebarTrigger />
-                  <h1 className="text-xl font-semibold">
-                    {role === "ADMIN" ? "Admin Dashboard" : "Charity Dashboard"}
-                  </h1>
-                </div>
+        <div className="flex h-screen flex-col flex-1">
+          <header className="border-b border-border p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <SidebarTrigger />
+                <h1 className="text-xl font-semibold">
+                  {role === "ADMIN" ? "Admin Dashboard" : "Charity Dashboard"}
+                </h1>
               </div>
-            </header>
-            <main className="flex-1 overflow-auto p-6">
-              {children}
-            </main>
-          </div>
-        </SidebarInset>
+            </div>
+          </header>
+          <main className="flex-1 overflow-auto p-6">
+            {children}
+          </main>
+        </div>
       </div>
     </SidebarProvider>
   );
