@@ -2,27 +2,25 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { getAllCharities, deleteCharity } from "@/lib/api";
 import { Charity } from "@/types";
 import { Edit, Trash2, Eye } from "lucide-react";
+import { EditCharityForm } from "@/components/charities/EditCharityForm";
 
 export default function CharitiesList() {
   const [charities, setCharities] = useState<Charity[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [noResults, setNoResults] = useState(false);
+  const [selectedCharity, setSelectedCharity] = useState<Charity | null>(null);
 
   useEffect(() => {
     fetchCharities();
@@ -128,7 +126,11 @@ export default function CharitiesList() {
                             <Eye className="h-4 w-4" />
                             <span className="sr-only">View</span>
                           </Button>
-                          <Button variant="outline" size="icon">
+                          <Button 
+                            variant="outline" 
+                            size="icon"
+                            onClick={() => setSelectedCharity(charity)}
+                          >
                             <Edit className="h-4 w-4" />
                             <span className="sr-only">Edit</span>
                           </Button>
@@ -149,6 +151,24 @@ export default function CharitiesList() {
             </Table>
           )}
         </Card>
+
+        <Dialog open={!!selectedCharity} onOpenChange={(open) => !open && setSelectedCharity(null)}>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>Edit Charity</DialogTitle>
+            </DialogHeader>
+            {selectedCharity && (
+              <EditCharityForm 
+                charity={selectedCharity}
+                onSuccess={() => {
+                  setSelectedCharity(null);
+                  fetchCharities();
+                }}
+                onCancel={() => setSelectedCharity(null)}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );
