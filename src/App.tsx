@@ -10,6 +10,7 @@ import AuthGuard from "@/components/auth/AuthGuard";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import LoginPage from "./pages/login";
+import CharitySignUp from "./pages/charity/SignUp";  // Import the CharitySignUp component
 
 // Admin pages
 import AdminDashboard from "./pages/admin/Dashboard";
