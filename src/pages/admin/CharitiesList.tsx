@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -75,7 +74,7 @@ export default function CharitiesList() {
   };
 
   const filteredCharities = charities.filter(charity =>
-    charity.name.toLowerCase().includes(searchTerm.toLowerCase())
+    searchTerm === "" || charity.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (

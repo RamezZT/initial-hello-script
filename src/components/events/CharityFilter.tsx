@@ -36,6 +36,14 @@ export function CharityFilter({ onFilterChange }: CharityFilterProps) {
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
+    
+    // When search term is empty, show all charities by passing null or empty
+    if (value === "") {
+      setNoResults(false);
+      onFilterChange("");
+      return;
+    }
+    
     const matchingCharity = charities.find(charity => 
       charity.name.toLowerCase().includes(value.toLowerCase())
     );
