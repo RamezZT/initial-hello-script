@@ -1,8 +1,8 @@
-
 import { useState, ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { User, Role } from "@/types";
 import { logout, getUser } from "@/lib/auth";
+import { useTheme } from "next-themes";
 import { 
   Sidebar,
   SidebarContent,
@@ -18,7 +18,7 @@ import {
   SidebarMenuItem
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { Home, Users, Calendar, Folder, Settings, LogOut, BarChart2 } from "lucide-react";
+import { Home, Users, Calendar, LogOut, BarChart2, Moon, Sun } from "lucide-react";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -29,13 +29,17 @@ export default function DashboardLayout({ children, role }: DashboardLayoutProps
   const location = useLocation();
   const navigate = useNavigate();
   const user = getUser() as User;
+  const { theme, setTheme } = useTheme();
   
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
 
-  // Define menu items based on role
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
+
   const getMenuItems = () => {
     if (role === "ADMIN") {
       return [
@@ -113,6 +117,18 @@ export default function DashboardLayout({ children, role }: DashboardLayoutProps
                   {role === "ADMIN" ? "Admin Dashboard" : "Charity Dashboard"}
                 </h1>
               </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleTheme}
+                className="mr-6"
+              >
+                {theme === "dark" ? (
+                  <Sun className="h-5 w-5" />
+                ) : (
+                  <Moon className="h-5 w-5" />
+                )}
+              </Button>
             </div>
           </header>
           <main className="flex-1 overflow-auto p-6">
