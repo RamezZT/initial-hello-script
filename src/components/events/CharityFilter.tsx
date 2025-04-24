@@ -17,7 +17,7 @@ interface CharityFilterProps {
 
 export function CharityFilter({ onFilterChange }: CharityFilterProps) {
   const [charities, setCharities] = useState<Charity[]>([]);
-  const [selectedCharityId, setSelectedCharityId] = useState<string>("");
+  const [selectedCharityId, setSelectedCharityId] = useState<string>("all");
 
   useEffect(() => {
     fetchCharities();
@@ -39,7 +39,7 @@ export function CharityFilter({ onFilterChange }: CharityFilterProps) {
 
   const handleFilterChange = (value: string) => {
     setSelectedCharityId(value);
-    onFilterChange(value);
+    onFilterChange(value === "all" ? "" : value);
   };
 
   return (
@@ -49,7 +49,7 @@ export function CharityFilter({ onFilterChange }: CharityFilterProps) {
           <SelectValue placeholder="Filter by charity" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">All Charities</SelectItem>
+          <SelectItem value="all">All Charities</SelectItem>
           {charities.map((charity) => (
             <SelectItem key={charity.id} value={charity.id.toString()}>
               {charity.name}
