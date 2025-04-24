@@ -10,24 +10,34 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { getAllEvents, deleteEvent } from "@/lib/api";
 import { EventEntity } from "@/types";
-import { Edit, Trash2, Eye } from "lucide-react";
+import { Edit, Trash2, Eye, Search } from "lucide-react";
+import { EditEventForm } from "@/components/events/EditEventForm";
 
 export default function EventsList() {
   const [events, setEvents] = useState<EventEntity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [charityFilter, setCharityFilter] = useState("");
+  const [selectedEvent, setSelectedEvent] = useState<EventEntity | null>(null);
 
   useEffect(() => {
     fetchEvents();
-  }, []);
+  }, [charityFilter]);
 
   const fetchEvents = async () => {
     try {
       setLoading(true);
-      const data = await getAllEvents();
+      const data = await getAllEvents(charityFilter ? parseInt(charityFilter) : undefined);
       setEvents(data);
     } catch (error) {
       console.error("Error fetching events:", error);
@@ -72,6 +82,18 @@ export default function EventsList() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Events</h1>
+          <div className="flex gap-2 items-center">
+            <div className="relative">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Filter by charity ID"
+                type="number"
+                className="pl-8"
+                value={charityFilter}
+                onChange={(e) => setCharityFilter(e.target.value)}
+              />
+            </div>
+          </div>
         </div>
         
         <Card>
@@ -112,7 +134,11 @@ export default function EventsList() {
                             <Eye className="h-4 w-4" />
                             <span className="sr-only">View</span>
                           </Button>
-                          <Button variant="outline" size="icon">
+                          <Button 
+                            variant="outline" 
+                            size="icon"
+                            onClick={() => setSelectedEvent(event)}
+                          >
                             <Edit className="h-4 w-4" />
                             <span className="sr-only">Edit</span>
                           </Button>
@@ -134,6 +160,24 @@ export default function EventsList() {
           )}
         </Card>
       </div>
+
+      <Dialog open={!!selectedEvent} onOpenChange={(open) => !open && setSelectedEvent(null)}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Edit Event</DialogTitle>
+          </DialogHeader>
+          {selectedEvent && (
+            <EditEventForm 
+              event={selectedEvent}
+              onSuccess={() => {
+                setSelectedEvent(null);
+                fetchEvents();
+              }}
+              onCancel={() => setSelectedEvent(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
