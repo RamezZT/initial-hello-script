@@ -1,15 +1,6 @@
 
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { 
   Dialog,
@@ -17,44 +8,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { getAllEvents, deleteEvent, getAllCharities } from "@/lib/api";
-import { EventEntity, Charity } from "@/types";
-import { Edit, Trash2, Eye } from "lucide-react";
+import { getAllEvents, deleteEvent } from "@/lib/api";
+import { EventEntity } from "@/types";
 import { EditEventForm } from "@/components/events/EditEventForm";
+import { CharityFilter } from "@/components/events/CharityFilter";
+import { EventsTable } from "@/components/events/EventsTable";
 
 export default function EventsList() {
   const [events, setEvents] = useState<EventEntity[]>([]);
-  const [charities, setCharities] = useState<Charity[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCharityId, setSelectedCharityId] = useState<string>("");
   const [selectedEvent, setSelectedEvent] = useState<EventEntity | null>(null);
 
   useEffect(() => {
-    fetchCharities();
     fetchEvents();
   }, [selectedCharityId]);
-
-  const fetchCharities = async () => {
-    try {
-      const data = await getAllCharities();
-      setCharities(data);
-    } catch (error) {
-      console.error("Error fetching charities:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load charities",
-        variant: "destructive",
-      });
-    }
-  };
 
   const fetchEvents = async () => {
     try {
@@ -84,7 +53,7 @@ export default function EventsList() {
         title: "Success",
         description: "Event deleted successfully",
       });
-      fetchEvents(); // Refresh the list
+      fetchEvents();
     } catch (error) {
       console.error("Error deleting event:", error);
       toast({
@@ -104,87 +73,19 @@ export default function EventsList() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Events</h1>
-          <div className="w-[200px]">
-            <Select
-              value={selectedCharityId}
-              onValueChange={setSelectedCharityId}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Filter by charity" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All Charities</SelectItem>
-                {charities.map((charity) => (
-                  <SelectItem key={charity.id} value={charity.id.toString()}>
-                    {charity.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <CharityFilter onFilterChange={setSelectedCharityId} />
         </div>
         
         <Card>
           {loading ? (
             <div className="p-8 text-center">Loading events...</div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Location</TableHead>
-                  <TableHead>Charity</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {events.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center">
-                      No events found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  events.map((event) => (
-                    <TableRow key={event.id}>
-                      <TableCell>{event.id}</TableCell>
-                      <TableCell className="font-medium">{event.name}</TableCell>
-                      <TableCell>{formatDate(event.date)}</TableCell>
-                      <TableCell>{event.location}</TableCell>
-                      <TableCell>{event.charity?.name || "N/A"}</TableCell>
-                      <TableCell>{event.finished ? "Finished" : "Active"}</TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="icon">
-                            <Eye className="h-4 w-4" />
-                            <span className="sr-only">View</span>
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="icon"
-                            onClick={() => setSelectedEvent(event)}
-                          >
-                            <Edit className="h-4 w-4" />
-                            <span className="sr-only">Edit</span>
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="icon" 
-                            onClick={() => handleDelete(event.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            <span className="sr-only">Delete</span>
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+            <EventsTable 
+              events={events}
+              onDelete={handleDelete}
+              onEdit={setSelectedEvent}
+              formatDate={formatDate}
+            />
           )}
         </Card>
       </div>
