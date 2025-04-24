@@ -100,3 +100,7 @@ export async function getCharityTransactions(charityId: number): Promise<Transac
   return fetchWithAuth(`/transaction?charityId=${charityId}`);
 }
 
+// Payment Method Utilities
+export const PAYMENT_METHODS = ["VISA", "MASTERCARD"] as const;
+export type PaymentMethodType = "VISA" | "MASTERCARD";
+

@@ -20,8 +20,8 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { getCharityTransactions } from "@/lib/api";
-import { Transaction, PaymentMethod } from "@/types";
+import { getCharityTransactions, PAYMENT_METHODS } from "@/lib/api";
+import { Transaction } from "@/types";
 import { format } from "date-fns";
 import { getUser } from "@/lib/auth";
 import {
@@ -35,7 +35,6 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  ResponsiveContainer,
   Tooltip,
   Legend,
   LineChart,
@@ -120,7 +119,7 @@ export default function CharityTransactions() {
     }));
   };
 
-  const paymentMethodData = Object.values(PaymentMethod).map((method) => {
+  const paymentMethodData = PAYMENT_METHODS.map((method) => {
     const totalAmount = transactions
       .filter((t) => t.paymentMethod === method)
       .reduce((sum, t) => sum + Number(t.amount), 0);
@@ -200,8 +199,9 @@ export default function CharityTransactions() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Methods</SelectItem>
-                    <SelectItem value="VISA">VISA</SelectItem>
-                    <SelectItem value="MASTERCARD">MASTERCARD</SelectItem>
+                    {PAYMENT_METHODS.map(method => (
+                      <SelectItem key={method} value={method}>{method}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

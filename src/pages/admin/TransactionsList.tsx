@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search, Filter } from "lucide-react";
+import { Search } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -20,8 +20,8 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { getAllTransactions, getAllCharities } from "@/lib/api";
-import { Charity, Transaction, PaymentMethod } from "@/types";
+import { getAllTransactions, getAllCharities, PAYMENT_METHODS } from "@/lib/api";
+import { Charity, Transaction } from "@/types";
 import { format } from "date-fns";
 import {
   ChartContainer,
@@ -34,7 +34,6 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  ResponsiveContainer,
   Tooltip,
   Legend,
 } from "recharts";
@@ -119,7 +118,7 @@ export default function TransactionsList() {
     .sort((a, b) => b.amount - a.amount)
     .slice(0, 5); // Top 5 charities by donation amount
 
-  const paymentMethodChartData = Object.values(PaymentMethod).map((method) => {
+  const paymentMethodChartData = PAYMENT_METHODS.map((method) => {
     const totalAmount = transactions
       .filter((t) => t.paymentMethod === method)
       .reduce((sum, t) => sum + Number(t.amount), 0);
@@ -183,8 +182,9 @@ export default function TransactionsList() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Methods</SelectItem>
-                    <SelectItem value="VISA">VISA</SelectItem>
-                    <SelectItem value="MASTERCARD">MASTERCARD</SelectItem>
+                    {PAYMENT_METHODS.map(method => (
+                      <SelectItem key={method} value={method}>{method}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
