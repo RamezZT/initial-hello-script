@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signIn, isAuthenticated, getUserRole } from "@/lib/auth";
+import { UserRoundPlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -54,6 +55,10 @@ export default function LoginPage() {
     }
   };
 
+  const handleCharitySignUp = () => {
+    navigate("/charity/signup");
+  };
+
   return (
     <div className="flex h-screen items-center justify-center bg-gray-100">
       <Card className="w-full max-w-md">
@@ -93,9 +98,18 @@ export default function LoginPage() {
             </div>
           </CardContent>
           
-          <CardFooter>
+          <CardFooter className="flex flex-col space-y-2">
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Signing in..." : "Sign In"}
+            </Button>
+            <Button 
+              type="button" 
+              variant="secondary" 
+              className="w-full mt-2" 
+              onClick={handleCharitySignUp}
+            >
+              <UserRoundPlus className="mr-2 h-4 w-4" />
+              Sign Up as a Charity
             </Button>
           </CardFooter>
         </form>
@@ -103,3 +117,4 @@ export default function LoginPage() {
     </div>
   );
 }
+
