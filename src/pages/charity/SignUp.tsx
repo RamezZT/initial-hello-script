@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { isAuthenticated } from "@/lib/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -34,6 +35,13 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function CharitySignUp() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate("/");
+    }
+  }, [navigate]);
+
   const [logo, setLogo] = useState<File | null>(null);
   const [documents, setDocuments] = useState<FileList | null>(null);
 

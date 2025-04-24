@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signIn, isAuthenticated, getUserRole } from "@/lib/auth";
@@ -15,12 +14,16 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // If already logged in, redirect to appropriate dashboard
-  if (isAuthenticated()) {
-    const role = getUserRole();
-    if (role === "ADMIN") navigate("/admin/dashboard");
-    if (role === "CHARITY") navigate("/charity/dashboard");
-  }
+  useEffect(() => {
+    if (isAuthenticated()) {
+      const role = getUserRole();
+      if (role === "ADMIN") {
+        navigate("/admin/dashboard");
+      } else if (role === "CHARITY") {
+        navigate("/charity/dashboard");
+      }
+    }
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,4 +120,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
