@@ -1,13 +1,8 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 import { getAllCharities } from "@/lib/api";
 import { Charity } from "@/types";
 
@@ -17,7 +12,7 @@ interface CharityFilterProps {
 
 export function CharityFilter({ onFilterChange }: CharityFilterProps) {
   const [charities, setCharities] = useState<Charity[]>([]);
-  const [selectedCharityId, setSelectedCharityId] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     fetchCharities();
@@ -37,26 +32,26 @@ export function CharityFilter({ onFilterChange }: CharityFilterProps) {
     }
   };
 
-  const handleFilterChange = (value: string) => {
-    setSelectedCharityId(value);
-    onFilterChange(value === "all" ? "" : value);
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    const matchingCharity = charities.find(charity => 
+      charity.name.toLowerCase().includes(value.toLowerCase())
+    );
+    onFilterChange(matchingCharity ? matchingCharity.id.toString() : "");
   };
 
   return (
-    <div className="w-[200px]">
-      <Select value={selectedCharityId} onValueChange={handleFilterChange}>
-        <SelectTrigger>
-          <SelectValue placeholder="Filter by charity" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Charities</SelectItem>
-          {charities.map((charity) => (
-            <SelectItem key={charity.id} value={charity.id.toString()}>
-              {charity.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+    <div className="w-[200px] relative">
+      <div className="relative">
+        <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
+        <Input
+          type="text"
+          placeholder="Search charity"
+          value={searchTerm}
+          onChange={(e) => handleSearch(e.target.value)}
+          className="pl-8"
+        />
+      </div>
     </div>
   );
 }
