@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,14 @@ import { getAllCharities, deleteCharity } from "@/lib/api";
 import { Charity } from "@/types";
 import { Edit, Trash2, Eye } from "lucide-react";
 import { EditCharityForm } from "@/components/charities/EditCharityForm";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell
+} from "@/components/ui/table";
 
 export default function CharitiesList() {
   const [charities, setCharities] = useState<Charity[]>([]);

@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -50,10 +51,13 @@ export function EditCharityForm({ charity, onSuccess, onCancel }: EditCharityFor
   const onSubmit = async (data: FormData) => {
     try {
       const formData = new FormData();
+      
+      // Add form fields to FormData, ensuring proper string conversion
       Object.entries(data).forEach(([key, value]) => {
         formData.append(key, value.toString());
       });
 
+      // Add files if present
       if (files) {
         Array.from(files).forEach((file) => {
           formData.append("files", file);
