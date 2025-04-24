@@ -44,6 +44,7 @@ export type Charity = {
   transactions?: Transaction[];
   canReceiveFunds: boolean;
   status?: CHARITY_STATUS;
+  docsUrls?: string[];
 };
 
 export type EventEntity = {

@@ -1,8 +1,7 @@
-
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, FileText } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -40,6 +39,7 @@ export default function CharitiesList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCharity, setSelectedCharity] = useState<Charity | null>(null);
   const [activeTab, setActiveTab] = useState<CHARITY_STATUS>(CHARITY_STATUS.PENDING);
+  const [selectedDocs, setSelectedDocs] = useState<{ charity: Charity; urls: string[] } | null>(null);
 
   useEffect(() => {
     fetchCharities();
@@ -180,6 +180,18 @@ export default function CharitiesList() {
     ) || [];
   };
 
+  const handleViewDocs = (charity: Charity) => {
+    if (charity.docsUrls && charity.docsUrls.length > 0) {
+      setSelectedDocs({ charity, urls: charity.docsUrls });
+    } else {
+      toast({
+        title: "No Documents",
+        description: "This charity has not uploaded any documents.",
+        variant: "default",
+      });
+    }
+  };
+
   return (
     <DashboardLayout role="ADMIN">
       <div className="space-y-4">
@@ -270,6 +282,14 @@ export default function CharitiesList() {
                                 </Button>
                                 <Button 
                                   variant="outline" 
+                                  size="icon"
+                                  onClick={() => handleViewDocs(charity)}
+                                >
+                                  <FileText className="h-4 w-4" />
+                                  <span className="sr-only">View Documents</span>
+                                </Button>
+                                <Button 
+                                  variant="outline" 
                                   size="icon" 
                                   onClick={() => handleDelete(charity.id)}
                                 >
@@ -305,6 +325,29 @@ export default function CharitiesList() {
                 onCancel={() => setSelectedCharity(null)}
               />
             )}
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={!!selectedDocs} onOpenChange={(open) => !open && setSelectedDocs(null)}>
+          <DialogContent className="sm:max-w-[800px]">
+            <DialogHeader>
+              <DialogTitle>Documents - {selectedDocs?.charity.name}</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              {selectedDocs?.urls.map((url, index) => (
+                <div key={index} className="flex items-center gap-4">
+                  <FileText className="h-5 w-5" />
+                  <a 
+                    href={url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    Document {index + 1}
+                  </a>
+                </div>
+              ))}
+            </div>
           </DialogContent>
         </Dialog>
       </div>
