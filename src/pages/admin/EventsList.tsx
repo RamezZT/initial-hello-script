@@ -9,8 +9,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { getAllEvents, deleteEvent } from "@/lib/api";
-import { EventEntity } from "@/types";
+import { getAllEvents, deleteEvent, getAllCharities } from "@/lib/api";
+import { EventEntity, Charity } from "@/types";
 import { EditEventForm } from "@/components/events/EditEventForm";
 import { CharityFilter } from "@/components/events/CharityFilter";
 import { EventsTable } from "@/components/events/EventsTable";
@@ -20,10 +20,21 @@ export default function EventsList() {
   const [loading, setLoading] = useState(true);
   const [selectedCharityId, setSelectedCharityId] = useState<string>("");
   const [selectedEvent, setSelectedEvent] = useState<EventEntity | null>(null);
+  const [charities, setCharities] = useState<Charity[]>([]);
 
   useEffect(() => {
     fetchEvents();
+    fetchCharities();
   }, [selectedCharityId]);
+
+  const fetchCharities = async () => {
+    try {
+      const data = await getAllCharities();
+      setCharities(data);
+    } catch (error) {
+      console.error("Error fetching charities:", error);
+    }
+  };
 
   const fetchEvents = async () => {
     try {
