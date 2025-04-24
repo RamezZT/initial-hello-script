@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import {
@@ -11,11 +10,19 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { getAllEvents, deleteEvent, updateEvent } from "@/lib/api";
 import { EventEntity } from "@/types";
 import { getUser } from "@/lib/auth";
 import { Edit, Trash2, Eye, Plus } from "lucide-react";
+import { CreateEventForm } from "@/components/events/CreateEventForm";
 
 export default function CharityEventsList() {
   const [events, setEvents] = useState<EventEntity[]>([]);
@@ -93,14 +100,35 @@ export default function CharityEventsList() {
     return new Date(date).toLocaleDateString();
   };
 
+  const refreshEvents = () => {
+    fetchEvents();
+  };
+
   return (
     <DashboardLayout role="CHARITY">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Your Events</h1>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" /> Create New Event
-          </Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" /> Create New Event
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle>Create New Event</DialogTitle>
+              </DialogHeader>
+              <CreateEventForm onSuccess={() => {
+                refreshEvents();
+                // Close the dialog by clicking the close button
+                const closeButton = document.querySelector('[data-dialog-close]');
+                if (closeButton instanceof HTMLElement) {
+                  closeButton.click();
+                }
+              }} />
+            </DialogContent>
+          </Dialog>
         </div>
         
         <Card>
