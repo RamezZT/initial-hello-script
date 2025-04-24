@@ -93,9 +93,10 @@ export async function deleteDonation(id: number): Promise<void> {
 
 // Transactions API
 export async function getAllTransactions(): Promise<Transaction[]> {
-  return fetchWithAuth("/transaction/all"); // Adjust if your endpoint is different
+  return fetchWithAuth("/transaction/all");
 }
 
 export async function getCharityTransactions(charityId: number): Promise<Transaction[]> {
-  return fetchWithAuth(`/transaction/charity/${charityId}`); // Adjust if your endpoint is different
+  return fetchWithAuth(`/transaction?charityId=${charityId}`);
 }
+

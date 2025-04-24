@@ -42,11 +42,13 @@ export default function DashboardLayout({ children, role }: DashboardLayoutProps
         { title: "Dashboard", icon: Home, path: "/admin/dashboard" },
         { title: "Charities", icon: Users, path: "/admin/charities" },
         { title: "Events", icon: Calendar, path: "/admin/events" },
+        { title: "Transactions", icon: BarChart2, path: "/admin/transactions" },
       ];
     } else {
       return [
         { title: "Dashboard", icon: Home, path: "/charity/dashboard" },
         { title: "Your Events", icon: Calendar, path: "/charity/events" },
+        { title: "Your Transactions", icon: BarChart2, path: "/charity/transactions" },
       ];
     }
   };

@@ -15,10 +15,12 @@ import LoginPage from "./pages/login";
 import AdminDashboard from "./pages/admin/Dashboard";
 import CharitiesList from "./pages/admin/CharitiesList";
 import EventsList from "./pages/admin/EventsList";
+import TransactionsList from "./pages/admin/TransactionsList";
 
 // Charity pages
 import CharityDashboard from "./pages/charity/Dashboard";
 import CharityEventsList from "./pages/charity/EventsList";
+import CharityTransactions from "./pages/charity/Transactions";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +59,14 @@ const App = () => (
               </AuthGuard>
             } 
           />
+          <Route 
+            path="/admin/transactions" 
+            element={
+              <AuthGuard allowedRoles={["ADMIN"]}>
+                <TransactionsList />
+              </AuthGuard>
+            } 
+          />
           
           {/* Charity routes */}
           <Route 
@@ -72,6 +82,14 @@ const App = () => (
             element={
               <AuthGuard allowedRoles={["CHARITY"]}>
                 <CharityEventsList />
+              </AuthGuard>
+            } 
+          />
+          <Route 
+            path="/charity/transactions" 
+            element={
+              <AuthGuard allowedRoles={["CHARITY"]}>
+                <CharityTransactions />
               </AuthGuard>
             } 
           />
