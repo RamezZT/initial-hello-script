@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,8 +19,15 @@ import { Card } from "@/components/ui/card";
 const formSchema = z.object({
   name: z.string().min(1, "Charity name is required"),
   email: z.string().email("Invalid email address"),
+  password: z.string()
+    .min(8, "Password must be at least 8 characters")
+    .max(100, "Password is too long"),
+  confirmPassword: z.string(),
   phone: z.string().min(1, "Phone number is required"),
   address: z.string().min(1, "Address is required"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -36,6 +42,8 @@ export default function CharitySignUp() {
     defaultValues: {
       name: "",
       email: "",
+      password: "",
+      confirmPassword: "",
       phone: "",
       address: "",
     },
@@ -45,17 +53,15 @@ export default function CharitySignUp() {
     try {
       const formData = new FormData();
       
-      // Add form fields
-      Object.entries(data).forEach(([key, value]) => {
+      const { confirmPassword, ...submissionData } = data;
+      Object.entries(submissionData).forEach(([key, value]) => {
         formData.append(key, value);
       });
 
-      // Add logo if selected
       if (logo) {
         formData.append("image", logo);
       }
 
-      // Add documents if selected
       if (documents) {
         Array.from(documents).forEach((file) => {
           formData.append("docs", file);
@@ -120,6 +126,34 @@ export default function CharitySignUp() {
                   <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input placeholder="Enter email" type="email" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter password" type="password" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm Password</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Confirm password" type="password" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
