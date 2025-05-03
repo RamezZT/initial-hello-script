@@ -10,7 +10,7 @@ import AuthGuard from "@/components/auth/AuthGuard";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import LoginPage from "./pages/login";
-import CharitySignUp from "./pages/charity/SignUp";  // Import the CharitySignUp component
+import CharitySignUp from "./pages/charity/SignUp"; 
 
 // Admin pages
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -22,6 +22,7 @@ import TransactionsList from "./pages/admin/TransactionsList";
 import CharityDashboard from "./pages/charity/Dashboard";
 import CharityEventsList from "./pages/charity/EventsList";
 import CharityTransactions from "./pages/charity/Transactions";
+import EventVolunteers from "./pages/charity/EventVolunteers";
 
 const queryClient = new QueryClient();
 
@@ -84,6 +85,14 @@ const App = () => (
             element={
               <AuthGuard allowedRoles={["CHARITY"]}>
                 <CharityEventsList />
+              </AuthGuard>
+            } 
+          />
+          <Route 
+            path="/charity/events/:eventId/volunteers" 
+            element={
+              <AuthGuard allowedRoles={["CHARITY"]}>
+                <EventVolunteers />
               </AuthGuard>
             } 
           />

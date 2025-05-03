@@ -1,4 +1,6 @@
+
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import {
   Table,
@@ -21,7 +23,7 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { getAllEvents, deleteEvent, updateEvent } from "@/lib/api";
 import { EventEntity } from "@/types";
 import { getUser } from "@/lib/auth";
-import { Edit, Trash2, Eye, Plus } from "lucide-react";
+import { Edit, Trash2, Users, Plus } from "lucide-react";
 import { CreateEventForm } from "@/components/events/CreateEventForm";
 
 export default function CharityEventsList() {
@@ -171,10 +173,12 @@ export default function CharityEventsList() {
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-2">
-                          <Button variant="outline" size="icon">
-                            <Eye className="h-4 w-4" />
-                            <span className="sr-only">View</span>
-                          </Button>
+                          <Link to={`/charity/events/${event.id}/volunteers`}>
+                            <Button variant="outline" size="icon" title="Manage Volunteers">
+                              <Users className="h-4 w-4" />
+                              <span className="sr-only">Manage Volunteers</span>
+                            </Button>
+                          </Link>
                           <Button variant="outline" size="icon">
                             <Edit className="h-4 w-4" />
                             <span className="sr-only">Edit</span>

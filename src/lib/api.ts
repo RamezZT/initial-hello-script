@@ -1,5 +1,6 @@
+
 import { fetchWithAuth } from "./auth";
-import { Category, Charity, CHARITY_STATUS, Donation, EventEntity, Transaction } from "@/types";
+import { Category, Charity, CHARITY_STATUS, Donation, EventEntity, Transaction, Volunteer } from "@/types";
 
 // Charities API
 export async function getAllCharities(status?: CHARITY_STATUS): Promise<Charity[]> {
@@ -110,3 +111,15 @@ export async function getCharityTransactions(charityId: number): Promise<Transac
 // Payment Method Utilities
 export const PAYMENT_METHODS = ["VISA", "MASTERCARD"] as const;
 export type PaymentMethodType = "VISA" | "MASTERCARD";
+
+// Volunteers API
+export async function getEventVolunteers(eventId: number): Promise<Volunteer[]> {
+  return fetchWithAuth(`/volunteer/event/${eventId}`);
+}
+
+export async function updateVolunteerStatus(volunteerId: number, status: "ACCEPTED" | "REJECTED" | "IDLE"): Promise<Volunteer> {
+  return fetchWithAuth(`/volunteer/${volunteerId}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  });
+}
