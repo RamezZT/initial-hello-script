@@ -67,6 +67,9 @@ export function MapPicker({ onLocationSelect }: MapPickerProps) {
     }
   };
 
+  // Define map center as a proper LatLngExpression
+  const mapCenter: L.LatLngExpression = [20, 0];
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -84,10 +87,10 @@ export function MapPicker({ onLocationSelect }: MapPickerProps) {
         <div className="mt-4">
           <div className="h-[400px] w-full rounded-md border">
             <MapContainer 
-              center={[20, 0] as L.LatLngExpression} 
+              style={{ height: "100%", width: "100%" }}
               zoom={2} 
               scrollWheelZoom={false}
-              style={{ height: "100%", width: "100%" }}
+              center={mapCenter}
             >
               <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
