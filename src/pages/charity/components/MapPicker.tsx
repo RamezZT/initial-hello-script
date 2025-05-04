@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { MapPin } from "lucide-react";
 import {
   Dialog,
@@ -10,109 +10,52 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
 
-// Define the Google Maps types
-declare global {
-  interface Window {
-    initMap: () => void;
-    google: any;
-  }
-}
+// Fix Leaflet marker icon issue
+// This is needed because the default marker icons in Leaflet have relative paths
+// that don't work properly in a bundled application
+import icon from "leaflet/dist/images/marker-icon.png";
+import iconShadow from "leaflet/dist/images/marker-shadow.png";
+
+let DefaultIcon = L.icon({
+  iconUrl: icon,
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+});
+
+L.Marker.prototype.options.icon = DefaultIcon;
 
 interface MapPickerProps {
   onLocationSelect: (latitude: string, longitude: string) => void;
 }
 
+// Component to handle map clicks and update marker position
+function LocationMarker({ onLocationUpdate }: { onLocationUpdate: (lat: number, lng: number) => void }) {
+  const [position, setPosition] = useState<L.LatLng | null>(null);
+
+  useMapEvents({
+    click(e) {
+      setPosition(e.latlng);
+      onLocationUpdate(e.latlng.lat, e.latlng.lng);
+    },
+  });
+
+  return position === null ? null : (
+    <Marker position={position} />
+  );
+}
+
 export function MapPicker({ onLocationSelect }: MapPickerProps) {
   const [open, setOpen] = useState(false);
-  const [apiKey, setApiKey] = useState<string>("");
-  const [mapLoaded, setMapLoaded] = useState(false);
-  const mapRef = useRef<HTMLDivElement>(null);
-  const markerRef = useRef<any>(null);
-  const mapInstance = useRef<any>(null);
   const [selectedLocation, setSelectedLocation] = useState<{lat: number, lng: number} | null>(null);
 
-  const loadMap = () => {
-    if (!open || !mapRef.current || !apiKey) return;
-    
-    // Check if the API is already loaded
-    if (window.google && window.google.maps) {
-      initMap();
-      return;
-    }
-
-    // Create function accessible from global scope
-    window.initMap = initMap;
-
-    // Load Google Maps API dynamically
-    const googleMapsApiScript = document.createElement("script");
-    googleMapsApiScript.src = 
-      `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap&libraries=places`;
-    googleMapsApiScript.async = true;
-    googleMapsApiScript.defer = true;
-    document.head.appendChild(googleMapsApiScript);
+  const handleLocationUpdate = (lat: number, lng: number) => {
+    setSelectedLocation({ lat, lng });
   };
-
-  // Initialize the map
-  function initMap() {
-    if (!mapRef.current) return;
-
-    // Default location (center of the world)
-    const defaultLocation = { lat: 0, lng: 0 };
-    
-    // Create map instance
-    const map = new window.google.maps.Map(mapRef.current, {
-      center: defaultLocation,
-      zoom: 2,
-      mapTypeControl: false,
-    });
-    
-    mapInstance.current = map;
-    setMapLoaded(true);
-    
-    // Create a marker for selection
-    const marker = new window.google.maps.Marker({
-      map,
-      draggable: true,
-      position: defaultLocation,
-      visible: false,
-    });
-    
-    markerRef.current = marker;
-    
-    // Add click event to the map
-    map.addListener("click", (e: any) => {
-      if (!e.latLng) return;
-      
-      const clickedLocation = {
-        lat: e.latLng.lat(),
-        lng: e.latLng.lng(),
-      };
-      
-      marker.setPosition(clickedLocation);
-      marker.setVisible(true);
-      setSelectedLocation(clickedLocation);
-    });
-    
-    // Handle marker drag end
-    marker.addListener("dragend", () => {
-      const position = marker.getPosition();
-      if (position) {
-        setSelectedLocation({
-          lat: position.lat(),
-          lng: position.lng(),
-        });
-      }
-    });
-  }
-
-  // Call loadMap when the dialog is opened and API key is available
-  useEffect(() => {
-    if (open && apiKey) {
-      loadMap();
-    }
-  }, [open, apiKey]);
 
   const handleConfirmLocation = () => {
     if (selectedLocation) {
@@ -135,25 +78,24 @@ export function MapPicker({ onLocationSelect }: MapPickerProps) {
       <DialogContent className="sm:max-w-[600px] max-h-[80vh]">
         <DialogHeader>
           <DialogTitle>Select Charity Location</DialogTitle>
-          <DialogDescription>Click on the map to select your charity location or drag the marker to adjust.</DialogDescription>
+          <DialogDescription>Click on the map to select your charity location.</DialogDescription>
         </DialogHeader>
         
-        {!mapLoaded && (
-          <div className="mb-4">
-            <p className="text-sm text-muted-foreground mb-2">Enter your Google Maps API key to load the map:</p>
-            <div className="flex gap-2">
-              <Input
-                placeholder="Google Maps API Key"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-              />
-              <Button onClick={loadMap} disabled={!apiKey}>Load Map</Button>
-            </div>
-          </div>
-        )}
-        
         <div className="mt-4">
-          <div ref={mapRef} className="h-[400px] w-full rounded-md border"></div>
+          <div className="h-[400px] w-full rounded-md border">
+            <MapContainer 
+              center={[20, 0]} 
+              zoom={2} 
+              style={{ height: "100%", width: "100%" }}
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              <LocationMarker onLocationUpdate={handleLocationUpdate} />
+            </MapContainer>
+          </div>
+          
           <div className="mt-4 flex justify-between">
             {selectedLocation && (
               <div className="text-sm">
