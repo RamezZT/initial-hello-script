@@ -7,7 +7,7 @@ import { toast } from "@/components/ui/use-toast";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { VolunteersTable } from "@/components/volunteers/VolunteersTable";
 import { VolunteerFilters } from "@/components/volunteers/VolunteerFilters";
-import { getEvent, getEventVolunteers } from "@/lib/api";
+import { getEvent } from "@/lib/api";
 import { EventEntity, Volunteer } from "@/types";
 import { ArrowLeft, Calendar, MapPin, Users } from "lucide-react";
 
@@ -23,9 +23,16 @@ export default function EventVolunteers() {
   useEffect(() => {
     if (eventId) {
       fetchEventDetails();
-      fetchVolunteers();
     }
   }, [eventId]);
+
+  useEffect(() => {
+    if (event?.volunteers) {
+      setVolunteers(event.volunteers);
+      setFilteredVolunteers(event.volunteers);
+      setLoading(false);
+    }
+  }, [event]);
 
   useEffect(() => {
     applyFilters();
@@ -33,6 +40,7 @@ export default function EventVolunteers() {
 
   const fetchEventDetails = async () => {
     try {
+      setLoading(true);
       const data = await getEvent(Number(eventId));
       setEvent(data);
     } catch (error) {
@@ -42,23 +50,6 @@ export default function EventVolunteers() {
         description: "Failed to load event details",
         variant: "destructive",
       });
-    }
-  };
-
-  const fetchVolunteers = async () => {
-    try {
-      setLoading(true);
-      const data = await getEventVolunteers(Number(eventId));
-      setVolunteers(data);
-      setFilteredVolunteers(data);
-    } catch (error) {
-      console.error("Error fetching volunteers:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load volunteers",
-        variant: "destructive",
-      });
-    } finally {
       setLoading(false);
     }
   };
@@ -88,6 +79,11 @@ export default function EventVolunteers() {
 
   const handleFilterStatus = (status: string) => {
     setStatusFilter(status);
+  };
+
+  const handleVolunteerStatusChange = () => {
+    // Refresh event data to get updated volunteers
+    fetchEventDetails();
   };
 
   const formatDate = (date: Date) => {
@@ -153,7 +149,7 @@ export default function EventVolunteers() {
             ) : (
               <VolunteersTable 
                 volunteers={filteredVolunteers} 
-                onStatusChange={fetchVolunteers}
+                onStatusChange={handleVolunteerStatusChange}
               />
             )}
           </CardContent>
