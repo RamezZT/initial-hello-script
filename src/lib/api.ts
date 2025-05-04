@@ -110,7 +110,7 @@ export async function getCharityTransactions(charityId: number): Promise<Transac
 
 export async function toggleCharityFundReceiving(charityId: number, canReceive: boolean): Promise<Charity> {
   return fetchWithAuth(`/transactions/charity/${charityId}/toggle?canReceive=${canReceive}`, {
-    method: "PUT",
+    method: "PATCH",
   });
 }
 
