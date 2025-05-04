@@ -6,6 +6,7 @@ import { getAllEvents, getAllDonations } from "@/lib/api";
 import { getUser } from "@/lib/auth";
 import { User } from "@/types";
 import { Calendar, BarChart2 } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
 
 export default function CharityDashboard() {
   const [stats, setStats] = useState({
@@ -23,15 +24,20 @@ export default function CharityDashboard() {
       try {
         const [events, donations] = await Promise.all([
           getAllEvents(charityId),
-          getAllDonations(), // This should be filtered for charity's donations
+          getAllDonations()
         ]);
 
         setStats({
           events: events.length,
-          donations: donations.filter(d => d.charity.id === charityId).length,
+          donations: donations.filter(d => d.charity && d.charity.id === charityId).length,
         });
       } catch (error) {
         console.error("Error fetching dashboard stats", error);
+        toast({
+          title: "Error",
+          description: "Failed to load dashboard statistics",
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }
