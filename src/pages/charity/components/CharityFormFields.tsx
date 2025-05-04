@@ -1,14 +1,20 @@
 
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 import { SignUpFormData } from "../schemas/signUpSchema";
+import { MapPicker } from "./MapPicker";
 
 interface CharityFormFieldsProps {
   form: UseFormReturn<SignUpFormData>;
 }
 
 export function CharityFormFields({ form }: CharityFormFieldsProps) {
+  const handleLocationSelect = (latitude: string, longitude: string) => {
+    form.setValue("latitude", latitude);
+    form.setValue("longitude", longitude);
+  };
+
   return (
     <>
       <FormField
@@ -81,20 +87,39 @@ export function CharityFormFields({ form }: CharityFormFieldsProps) {
         )}
       />
 
-      <FormField
-        control={form.control}
-        name="address"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Address</FormLabel>
-            <FormControl>
-              <Input placeholder="Enter address" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <div className="space-y-3">
+        <FormLabel>Location</FormLabel>
+        <FormDescription>Select your charity's location on the map</FormDescription>
+        <MapPicker onLocationSelect={handleLocationSelect} />
+        
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="latitude"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input placeholder="Latitude" {...field} readOnly />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="longitude"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input placeholder="Longitude" {...field} readOnly />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+      </div>
     </>
   );
 }
-

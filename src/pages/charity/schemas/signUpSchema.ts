@@ -9,11 +9,11 @@ export const signUpSchema = z.object({
     .max(100, "Password is too long"),
   confirmPassword: z.string(),
   phone: z.string().min(1, "Phone number is required"),
-  address: z.string().min(1, "Address is required"),
+  latitude: z.string().min(1, "Latitude is required"),
+  longitude: z.string().min(1, "Longitude is required"),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
 });
 
 export type SignUpFormData = z.infer<typeof signUpSchema>;
-
