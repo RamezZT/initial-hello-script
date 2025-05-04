@@ -1,5 +1,5 @@
 
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 import { SignUpFormData } from "../schemas/signUpSchema";
@@ -89,6 +89,7 @@ export function CharityFormFields({ form }: CharityFormFieldsProps) {
 
       <div className="space-y-3">
         <FormLabel>Location</FormLabel>
+        <FormDescription>Select your charity's location on the map</FormDescription>
         <MapPicker onLocationSelect={handleLocationSelect} />
         
         <div className="grid grid-cols-2 gap-4">

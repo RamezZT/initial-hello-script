@@ -7,8 +7,18 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+// Define the Google Maps types
+declare global {
+  interface Window {
+    initMap: () => void;
+    google: any;
+  }
+}
 
 interface MapPickerProps {
   onLocationSelect: (latitude: string, longitude: string) => void;
@@ -16,86 +26,93 @@ interface MapPickerProps {
 
 export function MapPicker({ onLocationSelect }: MapPickerProps) {
   const [open, setOpen] = useState(false);
+  const [apiKey, setApiKey] = useState<string>("");
+  const [mapLoaded, setMapLoaded] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
-  const markerRef = useRef<google.maps.Marker | null>(null);
-  const mapInstance = useRef<google.maps.Map | null>(null);
+  const markerRef = useRef<any>(null);
+  const mapInstance = useRef<any>(null);
   const [selectedLocation, setSelectedLocation] = useState<{lat: number, lng: number} | null>(null);
 
-  useEffect(() => {
-    if (!open || !mapRef.current) return;
+  const loadMap = () => {
+    if (!open || !mapRef.current || !apiKey) return;
     
-    // Initialize the map
-    const initMap = async () => {
-      // Default location (center of the world)
-      const defaultLocation = { lat: 0, lng: 0 };
-      
-      // Create map instance
-      const map = new google.maps.Map(mapRef.current, {
-        center: defaultLocation,
-        zoom: 2,
-        mapTypeControl: false,
-      });
-      
-      mapInstance.current = map;
-      
-      // Create a marker for selection
-      const marker = new google.maps.Marker({
-        map,
-        draggable: true,
-        position: defaultLocation,
-        visible: false,
-      });
-      
-      markerRef.current = marker;
-      
-      // Add click event to the map
-      map.addListener("click", (e: google.maps.MapMouseEvent) => {
-        if (!e.latLng) return;
-        
-        const clickedLocation = {
-          lat: e.latLng.lat(),
-          lng: e.latLng.lng(),
-        };
-        
-        marker.setPosition(clickedLocation);
-        marker.setVisible(true);
-        setSelectedLocation(clickedLocation);
-      });
-      
-      // Handle marker drag end
-      marker.addListener("dragend", () => {
-        const position = marker.getPosition();
-        if (position) {
-          setSelectedLocation({
-            lat: position.lat(),
-            lng: position.lng(),
-          });
-        }
-      });
-    };
+    // Check if the API is already loaded
+    if (window.google && window.google.maps) {
+      initMap();
+      return;
+    }
+
+    // Create function accessible from global scope
+    window.initMap = initMap;
 
     // Load Google Maps API dynamically
-    const loadGoogleMapsApi = () => {
-      if (window.google && window.google.maps) {
-        initMap();
-        return;
+    const googleMapsApiScript = document.createElement("script");
+    googleMapsApiScript.src = 
+      `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap&libraries=places`;
+    googleMapsApiScript.async = true;
+    googleMapsApiScript.defer = true;
+    document.head.appendChild(googleMapsApiScript);
+  };
+
+  // Initialize the map
+  function initMap() {
+    if (!mapRef.current) return;
+
+    // Default location (center of the world)
+    const defaultLocation = { lat: 0, lng: 0 };
+    
+    // Create map instance
+    const map = new window.google.maps.Map(mapRef.current, {
+      center: defaultLocation,
+      zoom: 2,
+      mapTypeControl: false,
+    });
+    
+    mapInstance.current = map;
+    setMapLoaded(true);
+    
+    // Create a marker for selection
+    const marker = new window.google.maps.Marker({
+      map,
+      draggable: true,
+      position: defaultLocation,
+      visible: false,
+    });
+    
+    markerRef.current = marker;
+    
+    // Add click event to the map
+    map.addListener("click", (e: any) => {
+      if (!e.latLng) return;
+      
+      const clickedLocation = {
+        lat: e.latLng.lat(),
+        lng: e.latLng.lng(),
+      };
+      
+      marker.setPosition(clickedLocation);
+      marker.setVisible(true);
+      setSelectedLocation(clickedLocation);
+    });
+    
+    // Handle marker drag end
+    marker.addListener("dragend", () => {
+      const position = marker.getPosition();
+      if (position) {
+        setSelectedLocation({
+          lat: position.lat(),
+          lng: position.lng(),
+        });
       }
+    });
+  }
 
-      const googleMapsApiScript = document.createElement("script");
-      googleMapsApiScript.src = 
-        `https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places`;
-      googleMapsApiScript.async = true;
-      googleMapsApiScript.defer = true;
-      googleMapsApiScript.onload = initMap;
-      document.head.appendChild(googleMapsApiScript);
-    };
-
-    loadGoogleMapsApi();
-
-    return () => {
-      // Cleanup if needed
-    };
-  }, [open]);
+  // Call loadMap when the dialog is opened and API key is available
+  useEffect(() => {
+    if (open && apiKey) {
+      loadMap();
+    }
+  }, [open, apiKey]);
 
   const handleConfirmLocation = () => {
     if (selectedLocation) {
@@ -118,7 +135,23 @@ export function MapPicker({ onLocationSelect }: MapPickerProps) {
       <DialogContent className="sm:max-w-[600px] max-h-[80vh]">
         <DialogHeader>
           <DialogTitle>Select Charity Location</DialogTitle>
+          <DialogDescription>Click on the map to select your charity location or drag the marker to adjust.</DialogDescription>
         </DialogHeader>
+        
+        {!mapLoaded && (
+          <div className="mb-4">
+            <p className="text-sm text-muted-foreground mb-2">Enter your Google Maps API key to load the map:</p>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Google Maps API Key"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+              />
+              <Button onClick={loadMap} disabled={!apiKey}>Load Map</Button>
+            </div>
+          </div>
+        )}
+        
         <div className="mt-4">
           <div ref={mapRef} className="h-[400px] w-full rounded-md border"></div>
           <div className="mt-4 flex justify-between">
