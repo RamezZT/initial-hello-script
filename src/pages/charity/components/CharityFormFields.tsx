@@ -11,8 +11,8 @@ interface CharityFormFieldsProps {
 
 export function CharityFormFields({ form }: CharityFormFieldsProps) {
   const handleLocationSelect = (latitude: string, longitude: string) => {
-    form.setValue("latitude", latitude);
-    form.setValue("longitude", longitude);
+    form.setValue("lat", latitude);
+    form.setValue("lng", longitude);
   };
 
   return (
@@ -95,7 +95,7 @@ export function CharityFormFields({ form }: CharityFormFieldsProps) {
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
-            name="latitude"
+            name="lat"
             render={({ field }) => (
               <FormItem>
                 <FormControl>
@@ -108,7 +108,7 @@ export function CharityFormFields({ form }: CharityFormFieldsProps) {
           
           <FormField
             control={form.control}
-            name="longitude"
+            name="lng"
             render={({ field }) => (
               <FormItem>
                 <FormControl>

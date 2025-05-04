@@ -31,8 +31,8 @@ export default function CharitySignUp() {
       password: "",
       confirmPassword: "",
       phone: "",
-      latitude: "",
-      longitude: "",
+      lat: "",
+      lng: "",
     },
   });
 
