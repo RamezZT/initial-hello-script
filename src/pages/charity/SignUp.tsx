@@ -12,6 +12,9 @@ import { signUpSchema, type SignUpFormData } from "./schemas/signUpSchema";
 import { CharityFormFields } from "./components/CharityFormFields";
 import { FileUploadField } from "./components/FileUploadField";
 
+// Import the API_URL constant
+import { API_URL } from "@/lib/constants";
+
 export default function CharitySignUp() {
   const navigate = useNavigate();
   const [logo, setLogo] = useState<File | null>(null);
@@ -55,7 +58,8 @@ export default function CharitySignUp() {
         });
       }
 
-      const response = await fetch("/api/charity", {
+      // Update API URL to use the constant
+      const response = await fetch(`${API_URL}/charity`, {
         method: "POST",
         body: formData,
       });
