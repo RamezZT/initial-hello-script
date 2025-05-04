@@ -84,9 +84,10 @@ export function MapPicker({ onLocationSelect }: MapPickerProps) {
         <div className="mt-4">
           <div className="h-[400px] w-full rounded-md border">
             <MapContainer 
-              style={{ height: "100%", width: "100%" }}
-              center={[20, 0]} 
+              center={[20, 0] as L.LatLngExpression} 
               zoom={2} 
+              scrollWheelZoom={false}
+              style={{ height: "100%", width: "100%" }}
             >
               <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
