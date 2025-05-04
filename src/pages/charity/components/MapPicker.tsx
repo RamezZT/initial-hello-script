@@ -10,51 +10,39 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
-
-// Fix Leaflet marker icon issue
-// This is needed because the default marker icons in Leaflet have relative paths
-// that don't work properly in a bundled application
-import icon from "leaflet/dist/images/marker-icon.png";
-import iconShadow from "leaflet/dist/images/marker-shadow.png";
-
-let DefaultIcon = L.icon({
-  iconUrl: icon,
-  shadowUrl: iconShadow,
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-});
-
-L.Marker.prototype.options.icon = DefaultIcon;
+import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
 
 interface MapPickerProps {
   onLocationSelect: (latitude: string, longitude: string) => void;
 }
 
-// Component to handle map clicks and update marker position
-function LocationMarker({ onLocationUpdate }: { onLocationUpdate: (lat: number, lng: number) => void }) {
-  const [position, setPosition] = useState<L.LatLng | null>(null);
-  
-  useMapEvents({
-    click(e) {
-      setPosition(e.latlng);
-      onLocationUpdate(e.latlng.lat, e.latlng.lng);
-    },
-  });
+// Default map center (world view)
+const defaultCenter = {
+  lat: 20,
+  lng: 0
+};
 
-  return position === null ? null : (
-    <Marker position={position} />
-  );
-}
+const mapContainerStyle = {
+  width: '100%',
+  height: '100%'
+};
 
 export function MapPicker({ onLocationSelect }: MapPickerProps) {
   const [open, setOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<{lat: number, lng: number} | null>(null);
+  
+  // Load Google Maps JavaScript API
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: "AIzaSyA2Zd3vipZEsl8mljrPOH_2oVwrQdwssAU", // This is a placeholder API key, replace with your actual Google Maps API key
+  });
 
-  const handleLocationUpdate = (lat: number, lng: number) => {
-    setSelectedLocation({ lat, lng });
+  const handleMapClick = (e: google.maps.MapMouseEvent) => {
+    if (e.latLng) {
+      const lat = e.latLng.lat();
+      const lng = e.latLng.lng();
+      setSelectedLocation({ lat, lng });
+    }
   };
 
   const handleConfirmLocation = () => {
@@ -66,9 +54,6 @@ export function MapPicker({ onLocationSelect }: MapPickerProps) {
       setOpen(false);
     }
   };
-
-  // Define map center as a proper LatLngExpression
-  const mapCenter: L.LatLngExpression = [20, 0];
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -86,18 +71,22 @@ export function MapPicker({ onLocationSelect }: MapPickerProps) {
         
         <div className="mt-4">
           <div className="h-[400px] w-full rounded-md border">
-            <MapContainer 
-              center={mapCenter}
-              zoom={2}
-              scrollWheelZoom={false}
-              style={{ height: "100%", width: "100%" }}
-            >
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              <LocationMarker onLocationUpdate={handleLocationUpdate} />
-            </MapContainer>
+            {isLoaded ? (
+              <GoogleMap
+                mapContainerStyle={mapContainerStyle}
+                center={selectedLocation || defaultCenter}
+                zoom={selectedLocation ? 8 : 2}
+                onClick={handleMapClick}
+              >
+                {selectedLocation && (
+                  <Marker position={selectedLocation} />
+                )}
+              </GoogleMap>
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                Loading map...
+              </div>
+            )}
           </div>
           
           <div className="mt-4 flex justify-between">
