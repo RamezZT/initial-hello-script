@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { MapPin } from "lucide-react";
 import {
@@ -19,22 +18,25 @@ interface MapPickerProps {
 // Default map center (world view)
 const defaultCenter = {
   lat: 20,
-  lng: 0
+  lng: 0,
 };
 
 const mapContainerStyle = {
-  width: '100%',
-  height: '100%'
+  width: "100%",
+  height: "100%",
 };
 
 export function MapPicker({ onLocationSelect }: MapPickerProps) {
   const [open, setOpen] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState<{lat: number, lng: number} | null>(null);
-  
+  const [selectedLocation, setSelectedLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+
   // Load Google Maps JavaScript API
   const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: "AIzaSyA2Zd3vipZEsl8mljrPOH_2oVwrQdwssAU", // This is a placeholder API key, replace with your actual Google Maps API key
+    id: "clever-environs-458817-q2",
+    googleMapsApiKey: "AIzaSyAzmf6d3cEi3aXZgVEsFYHV24dW9rUp3nA", // This is a placeholder API key, replace with your actual Google Maps API key
   });
 
   const handleMapClick = (e: google.maps.MapMouseEvent) => {
@@ -66,9 +68,11 @@ export function MapPicker({ onLocationSelect }: MapPickerProps) {
       <DialogContent className="sm:max-w-[600px] max-h-[80vh]">
         <DialogHeader>
           <DialogTitle>Select Charity Location</DialogTitle>
-          <DialogDescription>Click on the map to select your charity location.</DialogDescription>
+          <DialogDescription>
+            Click on the map to select your charity location.
+          </DialogDescription>
         </DialogHeader>
-        
+
         <div className="mt-4">
           <div className="h-[400px] w-full rounded-md border">
             {isLoaded ? (
@@ -78,9 +82,7 @@ export function MapPicker({ onLocationSelect }: MapPickerProps) {
                 zoom={selectedLocation ? 8 : 2}
                 onClick={handleMapClick}
               >
-                {selectedLocation && (
-                  <Marker position={selectedLocation} />
-                )}
+                {selectedLocation && <Marker position={selectedLocation} />}
               </GoogleMap>
             ) : (
               <div className="flex items-center justify-center h-full">
@@ -88,7 +90,7 @@ export function MapPicker({ onLocationSelect }: MapPickerProps) {
               </div>
             )}
           </div>
-          
+
           <div className="mt-4 flex justify-between">
             {selectedLocation && (
               <div className="text-sm">
@@ -97,7 +99,7 @@ export function MapPicker({ onLocationSelect }: MapPickerProps) {
                 <p>Longitude: {selectedLocation.lng.toFixed(6)}</p>
               </div>
             )}
-            <Button 
+            <Button
               onClick={handleConfirmLocation}
               disabled={!selectedLocation}
               className="ml-auto"
