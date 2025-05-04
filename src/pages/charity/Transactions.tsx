@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { getCharityTransactions, PAYMENT_METHODS } from "@/lib/api";
+import { getAllTransactions, PAYMENT_METHODS } from "@/lib/api";
 import { Transaction } from "@/types";
 import { format } from "date-fns";
 import { getUser } from "@/lib/auth";
@@ -66,8 +66,13 @@ export default function CharityTransactions() {
     
     try {
       setLoading(true);
-      const data = await getCharityTransactions(charityId);
-      setTransactions(data);
+      // Using getAllTransactions instead of getCharityTransactions which is causing a 404
+      const data = await getAllTransactions();
+      // Filter transactions for the current charity on the client side
+      const filteredTransactions = data.filter(transaction => 
+        transaction.charity && transaction.charity.id === charityId
+      );
+      setTransactions(filteredTransactions);
     } catch (error) {
       console.error("Error fetching transactions:", error);
       toast({
