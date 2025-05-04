@@ -27,14 +27,18 @@ const mapContainerStyle = {
   height: '100%'
 };
 
+// Use a consistent loader ID across the entire application
+const GOOGLE_MAPS_LOADER_ID = "google-map-loader";
+const GOOGLE_MAPS_API_KEY = "AIzaSyAzmf6d3cEi3aXZgVEsFYHV24dW9rUp3nA";
+
 export function MapPicker({ onLocationSelect }: MapPickerProps) {
   const [open, setOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<{lat: number, lng: number} | null>(null);
   
-  // Load Google Maps JavaScript API
+  // Load Google Maps JavaScript API with a consistent ID
   const { isLoaded } = useJsApiLoader({
-    id: "clever-environs-458817-q2",
-    googleMapsApiKey: "AIzaSyAzmf6d3cEi3aXZgVEsFYHV24dW9rUp3nA",
+    id: GOOGLE_MAPS_LOADER_ID,
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
   });
 
   const handleMapClick = (e: google.maps.MapMouseEvent) => {
