@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { getAllTransactions, PAYMENT_METHODS } from "@/lib/api";
+import { getAllTransactions, PAYMENT_METHODS, toggleCharityFundReceiving } from "@/lib/api";
 import { Transaction } from "@/types";
 import { format } from "date-fns";
 import { getUser } from "@/lib/auth";
@@ -46,14 +46,18 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 
 export default function CharityTransactions() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterPaymentMethod, setFilterPaymentMethod] = useState<string>("all");
+  const [toggleLoading, setToggleLoading] = useState(false);
   const user = getUser();
   const charityId = user?.charity?.id;
+  const [canReceiveFunds, setCanReceiveFunds] = useState(user?.charity?.canReceiveFunds || false);
 
   useEffect(() => {
     if (charityId) {
@@ -82,6 +86,35 @@ export default function CharityTransactions() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Toggle fund receiving status
+  const handleToggleFundReceiving = async () => {
+    if (!charityId) return;
+    
+    try {
+      setToggleLoading(true);
+      const newStatus = !canReceiveFunds;
+      
+      const result = await toggleCharityFundReceiving(charityId, newStatus);
+      
+      setCanReceiveFunds(result.canReceiveFunds);
+      
+      toast({
+        title: "Success",
+        description: `Donations are now ${result.canReceiveFunds ? 'enabled' : 'disabled'} for your charity`,
+      });
+      
+    } catch (error) {
+      console.error("Error toggling fund receiving:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update fund receiving status",
+        variant: "destructive",
+      });
+    } finally {
+      setToggleLoading(false);
     }
   };
 
@@ -141,6 +174,34 @@ export default function CharityTransactions() {
     <DashboardLayout role="CHARITY">
       <div className="space-y-4">
         <h1 className="text-2xl font-bold">Your Transactions</h1>
+        
+        <div className="flex flex-col md:flex-row gap-4 items-stretch">
+          <Card className="flex-1">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Donation Settings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-row items-center justify-between">
+                <div>
+                  <h3 className="font-medium">Accept Donations</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {canReceiveFunds 
+                      ? "Your charity can receive donations" 
+                      : "Your charity cannot receive donations"}
+                  </p>
+                </div>
+                <Button 
+                  variant={canReceiveFunds ? "outline" : "default"}
+                  onClick={handleToggleFundReceiving}
+                  disabled={toggleLoading}
+                  className="min-w-[120px]"
+                >
+                  {toggleLoading ? "Updating..." : (canReceiveFunds ? "Disable" : "Enable")}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
