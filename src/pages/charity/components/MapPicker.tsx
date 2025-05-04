@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { MapPin } from "lucide-react";
 import {
   Dialog,
@@ -36,8 +36,8 @@ interface MapPickerProps {
 // Component to handle map clicks and update marker position
 function LocationMarker({ onLocationUpdate }: { onLocationUpdate: (lat: number, lng: number) => void }) {
   const [position, setPosition] = useState<L.LatLng | null>(null);
-
-  const map = useMapEvents({
+  
+  useMapEvents({
     click(e) {
       setPosition(e.latlng);
       onLocationUpdate(e.latlng.lat, e.latlng.lng);
@@ -87,14 +87,14 @@ export function MapPicker({ onLocationSelect }: MapPickerProps) {
         <div className="mt-4">
           <div className="h-[400px] w-full rounded-md border">
             <MapContainer 
-              style={{ height: "100%", width: "100%" }}
-              zoom={2} 
-              scrollWheelZoom={false}
               center={mapCenter}
+              zoom={2}
+              scrollWheelZoom={false}
+              style={{ height: "100%", width: "100%" }}
             >
               <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
               <LocationMarker onLocationUpdate={handleLocationUpdate} />
             </MapContainer>
