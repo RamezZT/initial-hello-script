@@ -1,8 +1,6 @@
-
 import { toast } from "@/components/ui/use-toast";
 import { Role, User } from "@/types";
-
-const API_URL = "http://localhost:3000"; // Replace with your NestJS API URL
+import { API_URL } from "./constants";
 
 export async function signIn(email: string, password: string): Promise<{
   token: string;

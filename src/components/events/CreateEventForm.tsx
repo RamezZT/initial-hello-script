@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,6 +26,7 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { getUser } from "@/lib/auth";
+import { API_URL } from "@/lib/constants";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -67,7 +69,8 @@ export function CreateEventForm({ onSuccess }: { onSuccess?: () => void }) {
         });
       }
 
-      const response = await fetch("/api/event", {
+      // Update API URL to use the constant
+      const response = await fetch(`${API_URL}/event`, {
         method: "POST",
         body: formData,
       });
