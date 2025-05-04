@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 import { SignUpFormData } from "../schemas/signUpSchema";
 import { MapPicker } from "./MapPicker";
+import { PhoneInput } from "./PhoneInput";
 
 interface CharityFormFieldsProps {
   form: UseFormReturn<SignUpFormData>;
@@ -80,8 +81,15 @@ export function CharityFormFields({ form }: CharityFormFieldsProps) {
           <FormItem>
             <FormLabel>Phone</FormLabel>
             <FormControl>
-              <Input placeholder="Enter phone number" {...field} />
+              <PhoneInput 
+                placeholder="Enter phone number with country code" 
+                value={field.value} 
+                onChange={field.onChange}
+              />
             </FormControl>
+            <FormDescription>
+              Include country code (e.g. +1 for USA, +44 for UK)
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}
