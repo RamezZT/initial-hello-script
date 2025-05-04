@@ -33,8 +33,8 @@ export function MapPicker({ onLocationSelect }: MapPickerProps) {
   
   // Load Google Maps JavaScript API
   const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: "AIzaSyA2Zd3vipZEsl8mljrPOH_2oVwrQdwssAU", // This is a placeholder API key, replace with your actual Google Maps API key
+    id: "clever-environs-458817-q2",
+    googleMapsApiKey: "AIzaSyAzmf6d3cEi3aXZgVEsFYHV24dW9rUp3nA",
   });
 
   const handleMapClick = (e: google.maps.MapMouseEvent) => {
