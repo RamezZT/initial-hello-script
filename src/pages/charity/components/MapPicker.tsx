@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { MapPin } from "lucide-react";
+import { MapPin, Locate } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
+import { toast } from "sonner";
 
 interface MapPickerProps {
   onLocationSelect: (latitude: string, longitude: string) => void;
@@ -34,6 +35,7 @@ const GOOGLE_MAPS_API_KEY = "AIzaSyAzmf6d3cEi3aXZgVEsFYHV24dW9rUp3nA";
 export function MapPicker({ onLocationSelect }: MapPickerProps) {
   const [open, setOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
   
   // Load Google Maps JavaScript API with a consistent ID
   const { isLoaded } = useJsApiLoader({
@@ -59,6 +61,32 @@ export function MapPicker({ onLocationSelect }: MapPickerProps) {
     }
   };
 
+  const handleFindMyLocation = () => {
+    setIsLocating(true);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const currentLocation = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+          setSelectedLocation(currentLocation);
+          toast.success("Current location found!");
+          setIsLocating(false);
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          toast.error("Could not access your location. Please check your browser permissions.");
+          setIsLocating(false);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 10000 }
+      );
+    } else {
+      toast.error("Geolocation is not supported by your browser.");
+      setIsLocating(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -70,16 +98,28 @@ export function MapPicker({ onLocationSelect }: MapPickerProps) {
       <DialogContent className="sm:max-w-[600px] max-h-[80vh]">
         <DialogHeader>
           <DialogTitle>Select Charity Location</DialogTitle>
-          <DialogDescription>Click on the map to select your charity location.</DialogDescription>
+          <DialogDescription>Click on the map to select your charity location or use the locate button.</DialogDescription>
         </DialogHeader>
         
         <div className="mt-4">
+          <div className="flex justify-end mb-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleFindMyLocation} 
+              disabled={isLocating || !isLoaded}
+            >
+              <Locate className="mr-2 h-4 w-4" />
+              {isLocating ? "Finding location..." : "Find my location"}
+            </Button>
+          </div>
+          
           <div className="h-[400px] w-full rounded-md border">
             {isLoaded ? (
               <GoogleMap
                 mapContainerStyle={mapContainerStyle}
                 center={selectedLocation || defaultCenter}
-                zoom={selectedLocation ? 8 : 2}
+                zoom={selectedLocation ? 13 : 2}
                 onClick={handleMapClick}
               >
                 {selectedLocation && (
