@@ -55,7 +55,7 @@ export default function CharityTransactions() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterPaymentMethod, setFilterPaymentMethod] = useState<string>("all");
   const [toggleLoading, setToggleLoading] = useState(false);
-  const user = getUser();
+  const [user, setUser] = useState(getUser());
   const charityId = user?.charity?.id;
   const [canReceiveFunds, setCanReceiveFunds] = useState(user?.charity?.canReceiveFunds || false);
 
@@ -89,6 +89,15 @@ export default function CharityTransactions() {
     }
   };
 
+  // Refresh user data to get updated charity information
+  const refreshUserData = () => {
+    const updatedUser = getUser();
+    setUser(updatedUser);
+    if (updatedUser?.charity) {
+      setCanReceiveFunds(updatedUser.charity.canReceiveFunds || false);
+    }
+  };
+
   // Toggle fund receiving status
   const handleToggleFundReceiving = async () => {
     if (!charityId) return;
@@ -100,6 +109,9 @@ export default function CharityTransactions() {
       const result = await toggleCharityFundReceiving(charityId, newStatus);
       
       setCanReceiveFunds(result.canReceiveFunds);
+      
+      // Update the user in localStorage with the new charity status
+      refreshUserData();
       
       toast({
         title: "Success",
