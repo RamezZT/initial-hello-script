@@ -1,93 +1,29 @@
 
-import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { toast } from "@/components/ui/use-toast";
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import { getAllTransactions, PAYMENT_METHODS, toggleCharityFundReceiving } from "@/lib/api";
-import { Transaction } from "@/types";
-import { format } from "date-fns";
-import { getUser } from "@/lib/auth";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  LineChart,
-  Line,
-} from "recharts";
+import { useState } from "react";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
+import { getUser } from "@/lib/auth";
+import DashboardLayout from "@/components/layout/DashboardLayout";
+import { useTransactions } from "@/hooks/useTransactions";
+import DonationSettings from "@/components/transactions/DonationSettings";
+import TransactionStats from "@/components/transactions/TransactionStats";
+import TransactionFilters from "@/components/transactions/TransactionFilters";
+import TransactionsList from "@/components/transactions/TransactionsList";
+import TransactionCharts from "@/components/transactions/TransactionCharts";
 
 export default function CharityTransactions() {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterPaymentMethod, setFilterPaymentMethod] = useState<string>("all");
-  const [toggleLoading, setToggleLoading] = useState(false);
   const [user, setUser] = useState(getUser());
   const charityId = user?.charity?.id;
   const [canReceiveFunds, setCanReceiveFunds] = useState(user?.charity?.canReceiveFunds || false);
 
-  useEffect(() => {
-    if (charityId) {
-      fetchTransactions();
-    }
-  }, [charityId]);
-
-  const fetchTransactions = async () => {
-    if (!charityId) return;
-    
-    try {
-      setLoading(true);
-      // Using getAllTransactions instead of getCharityTransactions which is causing a 404
-      const data = await getAllTransactions();
-      // Filter transactions for the current charity on the client side
-      const filteredTransactions = data.filter(transaction => 
-        transaction.charity && transaction.charity.id === charityId
-      );
-      setTransactions(filteredTransactions);
-    } catch (error) {
-      console.error("Error fetching transactions:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load transactions",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { transactions, loading, getFilteredTransactions } = useTransactions(charityId);
+  const filteredTransactions = getFilteredTransactions(searchTerm, filterPaymentMethod);
 
   // Refresh user data to get updated charity information
   const refreshUserData = () => {
@@ -98,153 +34,20 @@ export default function CharityTransactions() {
     }
   };
 
-  // Toggle fund receiving status
-  const handleToggleFundReceiving = async () => {
-    if (!charityId) return;
-    
-    try {
-      setToggleLoading(true);
-      const newStatus = !canReceiveFunds;
-      
-      const result = await toggleCharityFundReceiving(charityId, newStatus);
-      
-      setCanReceiveFunds(result.canReceiveFunds);
-      
-      // Update the user in localStorage with the new charity status
-      refreshUserData();
-      
-      toast({
-        title: "Success",
-        description: `Donations are now ${result.canReceiveFunds ? 'enabled' : 'disabled'} for your charity`,
-      });
-      
-    } catch (error) {
-      console.error("Error toggling fund receiving:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update fund receiving status",
-        variant: "destructive",
-      });
-    } finally {
-      setToggleLoading(false);
-    }
-  };
-
-  // Filter transactions based on search and payment method
-  const filteredTransactions = transactions.filter((transaction) => {
-    const matchesSearch =
-      transaction.donor?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.amount.toString().includes(searchTerm);
-
-    const matchesPaymentMethod =
-      filterPaymentMethod === "all" ||
-      transaction.paymentMethod === filterPaymentMethod;
-
-    return matchesSearch && matchesPaymentMethod;
-  });
-
-  // Prepare chart data
-  const monthlyData = () => {
-    const months: Record<string, number> = {};
-    const now = new Date();
-    
-    // Initialize last 6 months
-    for (let i = 5; i >= 0; i--) {
-      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const monthYear = format(date, "MMM yyyy");
-      months[monthYear] = 0;
-    }
-
-    // Sum up transactions by month
-    transactions.forEach(transaction => {
-      const monthYear = format(new Date(transaction.createdAt), "MMM yyyy");
-      if (months[monthYear] !== undefined) {
-        months[monthYear] += Number(transaction.amount);
-      }
-    });
-
-    return Object.entries(months).map(([month, amount]) => ({
-      name: month,
-      amount: amount
-    }));
-  };
-
-  const paymentMethodData = PAYMENT_METHODS.map((method) => {
-    const totalAmount = transactions
-      .filter((t) => t.paymentMethod === method)
-      .reduce((sum, t) => sum + Number(t.amount), 0);
-    
-    return {
-      name: method,
-      amount: totalAmount,
-    };
-  });
-
-  const totalAmount = transactions.reduce((sum, t) => sum + Number(t.amount), 0);
-
   return (
     <DashboardLayout role="CHARITY">
       <div className="space-y-4">
         <h1 className="text-2xl font-bold">Your Transactions</h1>
         
         <div className="flex flex-col md:flex-row gap-4 items-stretch">
-          <Card className="flex-1">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Donation Settings</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-row items-center justify-between">
-                <div>
-                  <h3 className="font-medium">Accept Donations</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {canReceiveFunds 
-                      ? "Your charity can receive donations" 
-                      : "Your charity cannot receive donations"}
-                  </p>
-                </div>
-                <Button 
-                  variant={canReceiveFunds ? "outline" : "default"}
-                  onClick={handleToggleFundReceiving}
-                  disabled={toggleLoading}
-                  className="min-w-[120px]"
-                >
-                  {toggleLoading ? "Updating..." : (canReceiveFunds ? "Disable" : "Enable")}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <DonationSettings 
+            charityId={charityId}
+            canReceiveFunds={canReceiveFunds}
+            refreshUserData={refreshUserData}
+          />
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Received</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${totalAmount.toFixed(2)}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Transaction Count</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{transactions.length}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Average Amount</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                ${transactions.length ? (totalAmount / transactions.length).toFixed(2) : "0.00"}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <TransactionStats transactions={transactions} />
 
         <Tabs defaultValue="list" className="w-full">
           <TabsList>
@@ -253,190 +56,23 @@ export default function CharityTransactions() {
           </TabsList>
 
           <TabsContent value="list" className="space-y-4">
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-              <div className="w-full sm:w-[300px]">
-                <div className="relative">
-                  <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
-                  <Input
-                    type="text"
-                    placeholder="Search transactions"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-8"
-                  />
-                </div>
-              </div>
+            <TransactionFilters 
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              filterPaymentMethod={filterPaymentMethod}
+              setFilterPaymentMethod={setFilterPaymentMethod}
+            />
 
-              <div className="w-full sm:w-[180px]">
-                <Select
-                  value={filterPaymentMethod}
-                  onValueChange={setFilterPaymentMethod}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Payment Method" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Methods</SelectItem>
-                    {PAYMENT_METHODS.map(method => (
-                      <SelectItem key={method} value={method}>{method}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <Card>
-              {loading ? (
-                <div className="p-8 text-center">Loading transactions...</div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>Donor</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Payment Method</TableHead>
-                      <TableHead>Date</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredTransactions.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center">
-                          {searchTerm || filterPaymentMethod !== "all"
-                            ? "No transactions found matching your filters"
-                            : "No transactions available"}
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      filteredTransactions.map((transaction) => (
-                        <TableRow key={transaction.id}>
-                          <TableCell>{transaction.id}</TableCell>
-                          <TableCell>{transaction.donor?.name || "Anonymous"}</TableCell>
-                          <TableCell>${Number(transaction.amount).toFixed(2)}</TableCell>
-                          <TableCell>{transaction.paymentMethod}</TableCell>
-                          <TableCell>
-                            {format(new Date(transaction.createdAt), "MMM d, yyyy")}
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              )}
-            </Card>
+            <TransactionsList 
+              loading={loading}
+              filteredTransactions={filteredTransactions}
+              searchTerm={searchTerm}
+              filterPaymentMethod={filterPaymentMethod}
+            />
           </TabsContent>
 
           <TabsContent value="charts">
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Monthly Donations</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ChartContainer
-                    config={{
-                      monthly: { theme: { light: "#2563eb", dark: "#3b82f6" } },
-                    }}
-                    className="aspect-[4/3]"
-                  >
-                    <LineChart data={monthlyData()}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip
-                        content={({ active, payload }) => {
-                          if (active && payload && payload.length) {
-                            return (
-                              <div className="rounded-lg border bg-background p-2 shadow-sm">
-                                <div className="grid grid-cols-2 gap-2">
-                                  <div className="flex flex-col">
-                                    <span className="text-[0.70rem] uppercase text-muted-foreground">
-                                      Month
-                                    </span>
-                                    <span className="font-bold text-xs">
-                                      {payload[0].payload.name}
-                                    </span>
-                                  </div>
-                                  <div className="flex flex-col">
-                                    <span className="text-[0.70rem] uppercase text-muted-foreground">
-                                      Amount
-                                    </span>
-                                    <span className="font-bold text-xs">
-                                      ${payload[0].value}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          }
-                          return null;
-                        }}
-                      />
-                      <Legend />
-                      <Line
-                        type="monotone"
-                        dataKey="amount"
-                        name="Monthly Donations"
-                        stroke="var(--color-monthly)"
-                        activeDot={{ r: 8 }}
-                      />
-                    </LineChart>
-                  </ChartContainer>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Donations by Payment Method</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ChartContainer
-                    config={{
-                      method: { theme: { light: "#7c3aed", dark: "#8b5cf6" } },
-                    }}
-                    className="aspect-[4/3]"
-                  >
-                    <BarChart data={paymentMethodData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip
-                        content={({ active, payload }) => {
-                          if (active && payload && payload.length) {
-                            return (
-                              <div className="rounded-lg border bg-background p-2 shadow-sm">
-                                <div className="grid grid-cols-2 gap-2">
-                                  <div className="flex flex-col">
-                                    <span className="text-[0.70rem] uppercase text-muted-foreground">
-                                      Method
-                                    </span>
-                                    <span className="font-bold text-xs">
-                                      {payload[0].payload.name}
-                                    </span>
-                                  </div>
-                                  <div className="flex flex-col">
-                                    <span className="text-[0.70rem] uppercase text-muted-foreground">
-                                      Amount
-                                    </span>
-                                    <span className="font-bold text-xs">
-                                      ${payload[0].value}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          }
-                          return null;
-                        }}
-                      />
-                      <Legend />
-                      <Bar dataKey="amount" name="Total Amount" fill="var(--color-method)" />
-                    </BarChart>
-                  </ChartContainer>
-                </CardContent>
-              </Card>
-            </div>
+            <TransactionCharts transactions={transactions} />
           </TabsContent>
         </Tabs>
       </div>
