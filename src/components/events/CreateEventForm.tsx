@@ -27,13 +27,15 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { getUser } from "@/lib/auth";
 import { API_URL } from "@/lib/constants";
+import { MapPicker } from "@/pages/charity/components/MapPicker";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
   date: z.date({
     required_error: "Date is required",
   }),
-  location: z.string().min(1, "Location is required"),
+  lat: z.string().min(1, "Latitude is required"),
+  lng: z.string().min(1, "Longitude is required"),
   description: z.string().min(1, "Description is required"),
 });
 
@@ -49,17 +51,24 @@ export function CreateEventForm({ onSuccess }: { onSuccess?: () => void }) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      location: "",
+      lat: "",
+      lng: "",
       description: "",
     },
   });
+
+  const handleLocationSelect = (latitude: string, longitude: string) => {
+    form.setValue("lat", latitude);
+    form.setValue("lng", longitude);
+  };
 
   const onSubmit = async (data: FormData) => {
     try {
       const formData = new FormData();
       formData.append("name", data.name);
       formData.append("date", data.date.toISOString());
-      formData.append("location", data.location);
+      formData.append("lat", data.lat);
+      formData.append("lng", data.lng);
       formData.append("description", data.description);
       formData.append("charityId", String(charityId));
 
@@ -69,7 +78,6 @@ export function CreateEventForm({ onSuccess }: { onSuccess?: () => void }) {
         });
       }
 
-      // Update API URL to use the constant
       const response = await fetch(`${API_URL}/event`, {
         method: "POST",
         body: formData,
@@ -157,19 +165,38 @@ export function CreateEventForm({ onSuccess }: { onSuccess?: () => void }) {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="location"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Location</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter event location" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="space-y-2">
+          <FormLabel>Event Location</FormLabel>
+          <MapPicker onLocationSelect={handleLocationSelect} />
+          
+          <div className="flex gap-2 mt-2">
+            <FormField
+              control={form.control}
+              name="lat"
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <FormControl>
+                    <Input type="hidden" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="lng"
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <FormControl>
+                    <Input type="hidden" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
 
         <FormField
           control={form.control}
