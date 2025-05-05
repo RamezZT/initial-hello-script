@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,7 +19,11 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { getAllTransactions, PAYMENT_METHODS, toggleCharityFundReceiving } from "@/lib/api";
+import {
+  getAllTransactions,
+  PAYMENT_METHODS,
+  toggleCharityFundReceiving,
+} from "@/lib/api";
 import { Transaction } from "@/types";
 import { format } from "date-fns";
 import { getUser } from "@/lib/auth";
@@ -40,12 +43,7 @@ import {
   LineChart,
   Line,
 } from "recharts";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 
@@ -57,7 +55,9 @@ export default function CharityTransactions() {
   const [toggleLoading, setToggleLoading] = useState(false);
   const user = getUser();
   const charityId = user?.charity?.id;
-  const [canReceiveFunds, setCanReceiveFunds] = useState(user?.charity?.canReceiveFunds || false);
+  const [canReceiveFunds, setCanReceiveFunds] = useState(
+    user?.charity?.canReceiveFunds || false
+  );
 
   useEffect(() => {
     if (charityId) {
@@ -67,14 +67,15 @@ export default function CharityTransactions() {
 
   const fetchTransactions = async () => {
     if (!charityId) return;
-    
+
     try {
       setLoading(true);
       // Using getAllTransactions instead of getCharityTransactions which is causing a 404
       const data = await getAllTransactions();
       // Filter transactions for the current charity on the client side
-      const filteredTransactions = data.filter(transaction => 
-        transaction.charity && transaction.charity.id === charityId
+      const filteredTransactions = data.filter(
+        (transaction) =>
+          transaction.charity && transaction.charity.id === charityId
       );
       setTransactions(filteredTransactions);
     } catch (error) {
@@ -92,20 +93,19 @@ export default function CharityTransactions() {
   // Toggle fund receiving status
   const handleToggleFundReceiving = async () => {
     if (!charityId) return;
-    
+
     try {
       setToggleLoading(true);
       const newStatus = !canReceiveFunds;
-      
       const result = await toggleCharityFundReceiving(charityId, newStatus);
-      
       setCanReceiveFunds(result.canReceiveFunds);
-      
+
       toast({
         title: "Success",
-        description: `Donations are now ${result.canReceiveFunds ? 'enabled' : 'disabled'} for your charity`,
+        description: `Donations are now ${
+          result.canReceiveFunds ? "enabled" : "disabled"
+        } for your charity`,
       });
-      
     } catch (error) {
       console.error("Error toggling fund receiving:", error);
       toast({
@@ -121,7 +121,9 @@ export default function CharityTransactions() {
   // Filter transactions based on search and payment method
   const filteredTransactions = transactions.filter((transaction) => {
     const matchesSearch =
-      transaction.donor?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transaction.donor?.name
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
       transaction.amount.toString().includes(searchTerm);
 
     const matchesPaymentMethod =
@@ -135,7 +137,7 @@ export default function CharityTransactions() {
   const monthlyData = () => {
     const months: Record<string, number> = {};
     const now = new Date();
-    
+
     // Initialize last 6 months
     for (let i = 5; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -144,7 +146,7 @@ export default function CharityTransactions() {
     }
 
     // Sum up transactions by month
-    transactions.forEach(transaction => {
+    transactions.forEach((transaction) => {
       const monthYear = format(new Date(transaction.createdAt), "MMM yyyy");
       if (months[monthYear] !== undefined) {
         months[monthYear] += Number(transaction.amount);
@@ -153,7 +155,7 @@ export default function CharityTransactions() {
 
     return Object.entries(months).map(([month, amount]) => ({
       name: month,
-      amount: amount
+      amount: amount,
     }));
   };
 
@@ -161,74 +163,94 @@ export default function CharityTransactions() {
     const totalAmount = transactions
       .filter((t) => t.paymentMethod === method)
       .reduce((sum, t) => sum + Number(t.amount), 0);
-    
+
     return {
       name: method,
       amount: totalAmount,
     };
   });
 
-  const totalAmount = transactions.reduce((sum, t) => sum + Number(t.amount), 0);
+  const totalAmount = transactions.reduce(
+    (sum, t) => sum + Number(t.amount),
+    0
+  );
 
   return (
     <DashboardLayout role="CHARITY">
       <div className="space-y-4">
         <h1 className="text-2xl font-bold">Your Transactions</h1>
-        
+
         <div className="flex flex-col md:flex-row gap-4 items-stretch">
           <Card className="flex-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Donation Settings</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Donation Settings
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-row items-center justify-between">
                 <div>
                   <h3 className="font-medium">Accept Donations</h3>
                   <p className="text-sm text-muted-foreground">
-                    {canReceiveFunds 
-                      ? "Your charity can receive donations" 
+                    {canReceiveFunds
+                      ? "Your charity can receive donations"
                       : "Your charity cannot receive donations"}
                   </p>
                 </div>
-                <Button 
+                <Button
                   variant={canReceiveFunds ? "outline" : "default"}
                   onClick={handleToggleFundReceiving}
                   disabled={toggleLoading}
                   className="min-w-[120px]"
                 >
-                  {toggleLoading ? "Updating..." : (canReceiveFunds ? "Disable" : "Enable")}
+                  {toggleLoading
+                    ? "Updating..."
+                    : canReceiveFunds
+                    ? "Disable"
+                    : "Enable"}
                 </Button>
               </div>
             </CardContent>
           </Card>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Received</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Received
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${totalAmount.toFixed(2)}</div>
+              <div className="text-2xl font-bold">
+                ${totalAmount.toFixed(2)}
+              </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Transaction Count</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Transaction Count
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{transactions.length}</div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Average Amount</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Average Amount
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ${transactions.length ? (totalAmount / transactions.length).toFixed(2) : "0.00"}
+                $
+                {transactions.length
+                  ? (totalAmount / transactions.length).toFixed(2)
+                  : "0.00"}
               </div>
             </CardContent>
           </Card>
@@ -265,8 +287,10 @@ export default function CharityTransactions() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Methods</SelectItem>
-                    {PAYMENT_METHODS.map(method => (
-                      <SelectItem key={method} value={method}>{method}</SelectItem>
+                    {PAYMENT_METHODS.map((method) => (
+                      <SelectItem key={method} value={method}>
+                        {method}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -300,11 +324,18 @@ export default function CharityTransactions() {
                       filteredTransactions.map((transaction) => (
                         <TableRow key={transaction.id}>
                           <TableCell>{transaction.id}</TableCell>
-                          <TableCell>{transaction.donor?.name || "Anonymous"}</TableCell>
-                          <TableCell>${Number(transaction.amount).toFixed(2)}</TableCell>
+                          <TableCell>
+                            {transaction.donor?.name || "Anonymous"}
+                          </TableCell>
+                          <TableCell>
+                            ${Number(transaction.amount).toFixed(2)}
+                          </TableCell>
                           <TableCell>{transaction.paymentMethod}</TableCell>
                           <TableCell>
-                            {format(new Date(transaction.createdAt), "MMM d, yyyy")}
+                            {format(
+                              new Date(transaction.createdAt),
+                              "MMM d, yyyy"
+                            )}
                           </TableCell>
                         </TableRow>
                       ))
@@ -419,7 +450,11 @@ export default function CharityTransactions() {
                         }}
                       />
                       <Legend />
-                      <Bar dataKey="amount" name="Total Amount" fill="var(--color-method)" />
+                      <Bar
+                        dataKey="amount"
+                        name="Total Amount"
+                        fill="var(--color-method)"
+                      />
                     </BarChart>
                   </ChartContainer>
                 </CardContent>
