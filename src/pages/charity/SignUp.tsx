@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { isAuthenticated } from "@/lib/auth";
@@ -58,7 +57,6 @@ export default function CharitySignUp() {
         });
       }
 
-      // Update API URL to use the constant
       const response = await fetch(`${API_URL}/charity`, {
         method: "POST",
         body: formData,
