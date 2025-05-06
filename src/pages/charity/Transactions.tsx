@@ -17,6 +17,7 @@ export default function CharityTransactions() {
   const [canReceiveFunds, setCanReceiveFunds] = useState(
     user?.charity?.canReceiveFunds || false
   );
+  console.log(user.charity);
 
   const { transactions, loading, getFilteredTransactions } =
     useTransactions(charityId);
