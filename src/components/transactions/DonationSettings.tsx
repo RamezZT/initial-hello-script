@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,25 +16,30 @@ export default function DonationSettings({
   refreshUserData,
 }: DonationSettingsProps) {
   const [toggleLoading, setToggleLoading] = useState(false);
+  const [localCanReceiveFunds, setLocalCanReceiveFunds] =
+    useState(canReceiveFunds); // Local state for UI control
 
   // Toggle fund receiving status
   const handleToggleFundReceiving = async () => {
     if (!charityId) return;
-    
+
+    // Optimistic update
+    const newStatus = !localCanReceiveFunds;
+    setLocalCanReceiveFunds(newStatus);
+
     try {
       setToggleLoading(true);
-      const newStatus = !canReceiveFunds;
-      
       const result = await toggleCharityFundReceiving(charityId, newStatus);
-      
+
       // Update the user in localStorage with the new charity status
       refreshUserData();
-      
+
       toast({
         title: "Success",
-        description: `Donations are now ${result.canReceiveFunds ? 'enabled' : 'disabled'} for your charity`,
+        description: `Donations are now ${
+          result.canReceiveFunds ? "enabled" : "disabled"
+        } for your charity`,
       });
-      
     } catch (error) {
       console.error("Error toggling fund receiving:", error);
       toast({
@@ -43,6 +47,8 @@ export default function DonationSettings({
         description: "Failed to update fund receiving status",
         variant: "destructive",
       });
+      // Rollback UI if there was an error
+      setLocalCanReceiveFunds(canReceiveFunds); // Rollback the state
     } finally {
       setToggleLoading(false);
     }
@@ -58,18 +64,22 @@ export default function DonationSettings({
           <div>
             <h3 className="font-medium">Accept Donations</h3>
             <p className="text-sm text-muted-foreground">
-              {canReceiveFunds 
-                ? "Your charity can receive donations" 
+              {localCanReceiveFunds
+                ? "Your charity can receive donations"
                 : "Your charity cannot receive donations"}
             </p>
           </div>
-          <Button 
-            variant={canReceiveFunds ? "outline" : "default"}
+          <Button
+            variant={localCanReceiveFunds ? "outline" : "default"}
             onClick={handleToggleFundReceiving}
             disabled={toggleLoading}
             className="min-w-[120px]"
           >
-            {toggleLoading ? "Updating..." : (canReceiveFunds ? "Disable" : "Enable")}
+            {toggleLoading
+              ? "Updating..."
+              : localCanReceiveFunds
+              ? "Disable"
+              : "Enable"}
           </Button>
         </div>
       </CardContent>

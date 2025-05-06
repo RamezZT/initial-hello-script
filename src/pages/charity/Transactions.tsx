@@ -1,11 +1,5 @@
-
 import { useState } from "react";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getUser } from "@/lib/auth";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { useTransactions } from "@/hooks/useTransactions";
@@ -20,10 +14,17 @@ export default function CharityTransactions() {
   const [filterPaymentMethod, setFilterPaymentMethod] = useState<string>("all");
   const [user, setUser] = useState(getUser());
   const charityId = user?.charity?.id;
-  const [canReceiveFunds, setCanReceiveFunds] = useState(user?.charity?.canReceiveFunds || false);
+  const [canReceiveFunds, setCanReceiveFunds] = useState(
+    user?.charity?.canReceiveFunds || false
+  );
+  console.log(user.charity);
 
-  const { transactions, loading, getFilteredTransactions } = useTransactions(charityId);
-  const filteredTransactions = getFilteredTransactions(searchTerm, filterPaymentMethod);
+  const { transactions, loading, getFilteredTransactions } =
+    useTransactions(charityId);
+  const filteredTransactions = getFilteredTransactions(
+    searchTerm,
+    filterPaymentMethod
+  );
 
   // Refresh user data to get updated charity information
   const refreshUserData = () => {
@@ -38,15 +39,15 @@ export default function CharityTransactions() {
     <DashboardLayout role="CHARITY">
       <div className="space-y-4">
         <h1 className="text-2xl font-bold">Your Transactions</h1>
-        
+
         <div className="flex flex-col md:flex-row gap-4 items-stretch">
-          <DonationSettings 
+          <DonationSettings
             charityId={charityId}
             canReceiveFunds={canReceiveFunds}
             refreshUserData={refreshUserData}
           />
         </div>
-        
+
         <TransactionStats transactions={transactions} />
 
         <Tabs defaultValue="list" className="w-full">
@@ -56,14 +57,14 @@ export default function CharityTransactions() {
           </TabsList>
 
           <TabsContent value="list" className="space-y-4">
-            <TransactionFilters 
+            <TransactionFilters
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
               filterPaymentMethod={filterPaymentMethod}
               setFilterPaymentMethod={setFilterPaymentMethod}
             />
 
-            <TransactionsList 
+            <TransactionsList
               loading={loading}
               filteredTransactions={filteredTransactions}
               searchTerm={searchTerm}

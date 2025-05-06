@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { MapPin, Locate, Search } from "lucide-react";
 import {
@@ -21,12 +20,12 @@ interface MapPickerProps {
 // Default map center (world view)
 const defaultCenter = {
   lat: 20,
-  lng: 0
+  lng: 0,
 };
 
 const mapContainerStyle = {
-  width: '100%',
-  height: '100%'
+  width: "100%",
+  height: "100%",
 };
 
 // Use a consistent loader ID across the entire application
@@ -35,11 +34,14 @@ const GOOGLE_MAPS_API_KEY = "AIzaSyAzmf6d3cEi3aXZgVEsFYHV24dW9rUp3nA";
 
 export function MapPicker({ onLocationSelect }: MapPickerProps) {
   const [open, setOpen] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
   const [isLocating, setIsLocating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
-  
+
   // Load Google Maps JavaScript API with a consistent ID
   const { isLoaded } = useJsApiLoader({
     id: GOOGLE_MAPS_LOADER_ID,
@@ -72,7 +74,7 @@ export function MapPicker({ onLocationSelect }: MapPickerProps) {
         (position) => {
           const currentLocation = {
             lat: position.coords.latitude,
-            lng: position.coords.longitude
+            lng: position.coords.longitude,
           };
           setSelectedLocation(currentLocation);
           toast.success("Current location found!");
@@ -80,7 +82,9 @@ export function MapPicker({ onLocationSelect }: MapPickerProps) {
         },
         (error) => {
           console.error("Error getting location:", error);
-          toast.error("Could not access your location. Please check your browser permissions.");
+          toast.error(
+            "Could not access your location. Please check your browser permissions."
+          );
           setIsLocating(false);
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 10000 }
@@ -98,14 +102,14 @@ export function MapPicker({ onLocationSelect }: MapPickerProps) {
     }
 
     setIsSearching(true);
-    
+
     const geocoder = new google.maps.Geocoder();
     geocoder.geocode({ address: searchQuery }, (results, status) => {
       if (status === google.maps.GeocoderStatus.OK && results && results[0]) {
         const location = results[0].geometry.location;
         const newLocation = {
           lat: location.lat(),
-          lng: location.lng()
+          lng: location.lng(),
         };
         setSelectedLocation(newLocation);
         toast.success(`Found "${searchQuery}"`);
@@ -118,7 +122,7 @@ export function MapPicker({ onLocationSelect }: MapPickerProps) {
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleSearch();
     }
   };
@@ -134,9 +138,12 @@ export function MapPicker({ onLocationSelect }: MapPickerProps) {
       <DialogContent className="sm:max-w-[600px] max-h-[80vh]">
         <DialogHeader>
           <DialogTitle>Select Charity Location</DialogTitle>
-          <DialogDescription>Search for a location, use your current location, or click on the map.</DialogDescription>
+          <DialogDescription>
+            Search for a location, use your current location, or click on the
+            map.
+          </DialogDescription>
         </DialogHeader>
-        
+
         <div className="mt-4">
           <div className="flex gap-2 mb-2">
             <div className="flex-1">
@@ -149,9 +156,9 @@ export function MapPicker({ onLocationSelect }: MapPickerProps) {
                   className="flex-1"
                   disabled={!isLoaded || isSearching}
                 />
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={handleSearch}
                   disabled={!isLoaded || isSearching}
                 >
@@ -160,17 +167,17 @@ export function MapPicker({ onLocationSelect }: MapPickerProps) {
                 </Button>
               </div>
             </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleFindMyLocation} 
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleFindMyLocation}
               disabled={isLocating || !isLoaded}
             >
               <Locate className="mr-2 h-4 w-4" />
               {isLocating ? "Finding..." : "My Location"}
             </Button>
           </div>
-          
+
           <div className="h-[400px] w-full rounded-md border">
             {isLoaded ? (
               <GoogleMap
@@ -179,9 +186,7 @@ export function MapPicker({ onLocationSelect }: MapPickerProps) {
                 zoom={selectedLocation ? 13 : 2}
                 onClick={handleMapClick}
               >
-                {selectedLocation && (
-                  <Marker position={selectedLocation} />
-                )}
+                {selectedLocation && <Marker position={selectedLocation} />}
               </GoogleMap>
             ) : (
               <div className="flex items-center justify-center h-full">
@@ -189,7 +194,7 @@ export function MapPicker({ onLocationSelect }: MapPickerProps) {
               </div>
             )}
           </div>
-          
+
           <div className="mt-4 flex justify-between">
             {selectedLocation && (
               <div className="text-sm">
@@ -198,7 +203,7 @@ export function MapPicker({ onLocationSelect }: MapPickerProps) {
                 <p>Longitude: {selectedLocation.lng.toFixed(6)}</p>
               </div>
             )}
-            <Button 
+            <Button
               onClick={handleConfirmLocation}
               disabled={!selectedLocation}
               className="ml-auto"
